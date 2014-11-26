@@ -28,13 +28,6 @@ pedigree <- function(sire, dam, label) {
         label = as.character(label))
 }
 
-#' Coerce a pedigree to a sparse triangular matrix
-#'
-#' Create a sparse, unit lower triangular matrix from a pedigree.  The
-#' matrix the L factor in the LDL' Cholesky factorization of the
-#' inverse of the relationship matrix.
-#'
-#' @export
 setAs("pedigree", "sparseMatrix", # representation as T^{-1}
       function(from) {
 	  sire <- from@sire
