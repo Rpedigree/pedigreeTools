@@ -1,3 +1,6 @@
+#' @useDynLib pedigreeR, .registration = TRUE
+NULL
+
 #' Pedigree class
 #'
 #'@export

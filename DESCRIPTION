@@ -7,8 +7,7 @@ Maintainer: Ana Ines Vazquez <anainesvs@gmail.com>
 Description: Tools to sort pedigrees and to extract the inbreeding coefficients
     and the relationship matrix.
 Depends:
-    R(>= 3.0.0)
-Imports:
+    R(>= 3.0.0),
     Matrix (>= 1.0),
     methods
 LazyLoad: yes
