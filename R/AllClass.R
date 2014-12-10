@@ -1,6 +1,6 @@
 #' Pedigree class
 #'
-#'
+#'@export
 setClass("pedigree", representation =
 	 list(sire = "integer", dam = "integer", label = "character"),
 	 validity = function(object) {
@@ -22,6 +22,3 @@ setClass("pedigree", representation =
                               n, "]", sep = ''))
 	     TRUE
 	 })
-
-
-

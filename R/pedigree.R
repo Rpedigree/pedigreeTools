@@ -124,8 +124,8 @@ Dmat <- function(ped)
 #'
 #' Determine the right Cholesky factor of the relationship matrix for
 #' the pedigree \code{ped}, possibly restricted to the specific labels
-#' that occur in \code{labs}. 
-#' 
+#' that occur in \code{labs}.
+#'
 #' @param ped a pedigree that includes the individuals who occur in svec
 #' @param labs a character vector or a factor giving the labels to
 #'    which to restrict the relationship matrix. If \code{labs} is a
@@ -137,7 +137,7 @@ relfactor <- function(ped, labs)
 {
     stopifnot(is(ped, "pedigree"))
     if (missing(labs))                  # square case
-        return(Diagonal(x = sqrt(Dmat(ped))) %*% 
+        return(Diagonal(x = sqrt(Dmat(ped))) %*%
                solve(t(as(ped, "sparseMatrix"))))
     labs <- factor(labs) # drop unused levels from a factor
     stopifnot(all(labs %in% ped@label))
@@ -145,7 +145,7 @@ relfactor <- function(ped, labs)
         solve(t(as(ped, "sparseMatrix")), # rectangular factor
               as(factor(ped@label, levels = ped@label),"sparseMatrix"))
     tmpA<-crossprod(rect)
-    tmp<- ped@label %in% labs 
+    tmp<- ped@label %in% labs
     tmpA<-tmpA[tmp,tmp]
 
     orlab <- order(as.numeric(factor(labped<-ped@label[tmp], levels=labs, ordered=T)))
@@ -167,7 +167,7 @@ relfactor <- function(ped, labs)
 #' @export
 getAInv <- function(ped)
 {
-    stopifnot(is(ped, "pedigree"))    
+    stopifnot(is(ped, "pedigree"))
     T_Inv <- as(ped, "sparseMatrix")
     D_Inv <- diag(1/Dmat(ped))
     aiMx<-t(T_Inv) %*% D_Inv %*% T_Inv
@@ -177,11 +177,18 @@ getAInv <- function(ped)
 
 #' Additive Relationship Matrix
 #'
+#' Returns the additive relationship matrix for the pedigree \code{ped} .
 #' @param ped a pedigree that includes the individuals who occur in svec
 #'    which to restrict the relationship matrix. If \code{labs} is a
 #'    factor then the levels of the factor are used as the labels.
 #'    Default is the complete set of labels in the pedigree.
 #' @return an object that inherits from \linkS4class{CHMfactor}
+#' @examples
+#' ## Example from chapter 2 of Mrode (2005)
+#' ped <- pedigree(sire = c(NA,NA,1, 1,4,5),
+#'                 dam  = c(NA,NA,2,NA,3,2), label= 1:6)
+#' (getA(ped))
+#' @keywords array
 #' @export
 getA <- function(ped)
 {
@@ -191,14 +198,14 @@ getA <- function(ped)
     aMx
 }
 
-#' Counts number of generations of ancestors for one subject. Use recursion. 
-#' 
-#' @param pede data frame with a pedigree and a column for the number 
+#' Counts number of generations of ancestors for one subject. Use recursion.
+#'
+#' @param pede data frame with a pedigree and a column for the number
 #' of generations of each subject.
 #' @param id subject for which we want the number of generations.
 #' @return a data frame object with the pedigree and generation of
 #'    ancestors for subject id.
-#' 
+#'
 getGenAncestors <- function(pede, id){
     j <- which(pede$id==id)
     parents <- c(pede$sire[j], pede$dam[j])
@@ -235,13 +242,13 @@ getGenAncestors <- function(pede, id){
     pede
 }
 
-#' Edits a disordered or incomplete pedigree, 
+#' Edits a disordered or incomplete pedigree,
 #'    1_ add labels for the sires and dams not listed as labels before.
 #'    2_ order pedigree based on recursive calls to getGenAncestors.
 #' @param sire integer vector or factor representation of the sires
 #' @param dam integer vector or factor representation of the dams
 #' @param label character vector of labels
-#' @param verbose logical to print the row of the pedigree that the 
+#' @param verbose logical to print the row of the pedigree that the
 #'    function is ordering. Default is FALSE.
 #' @return a data frame with the pedigree ordered.
 #' @export
@@ -251,7 +258,7 @@ editPed <- function(sire, dam, label, verbose = FALSE)
     if (nped != length(dam))  stop("sire and dam have to be of the same length")
     if (nped != length(label)) stop("label has to be of the same length than sire and dam")
     tmp <- unique(sort(c(as.character(sire), as.character(dam))))
-    
+
     missingP <-NULL
     if(any(completeId <- ! tmp %in% as.character(label))) missingP <- tmp[completeId]
     labelOl <- c(as.character(missingP),as.character(label))

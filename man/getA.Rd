@@ -15,6 +15,13 @@ Default is the complete set of labels in the pedigree.}
 an object that inherits from \linkS4class{CHMfactor}
 }
 \description{
-Additive Relationship Matrix
+Returns the additive relationship matrix for the pedigree \code{ped} .
 }
+\examples{
+## Example from chapter 2 of Mrode (2005)
+ped <- pedigree(sire = c(NA,NA,1, 1,4,5),
+                dam  = c(NA,NA,2,NA,3,2), label= 1:6)
+(getA(ped))
+}
+\keyword{array}
 
