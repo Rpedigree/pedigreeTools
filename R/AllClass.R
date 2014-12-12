@@ -1,9 +1,6 @@
-#' @useDynLib pedigreeR, .registration = TRUE
-NULL
-
 #' Pedigree class
 #'
-#'@export
+#' @export
 setClass("pedigree", representation =
 	 list(sire = "integer", dam = "integer", label = "character"),
 	 validity = function(object) {
