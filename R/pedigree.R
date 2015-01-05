@@ -4,14 +4,14 @@
 #'
 #' A simple constructor for a pedigree object.  The main point for the
 #' constructor is to use coercions to make the calls easier.
+#'
 #' @param sire integer vector or factor representation of the sires
 #' @param dam integer vector or factor representation of the dams
 #' @param label character vector of labels
 #' @return an pedigree object of class \linkS4class{pedigree}
-
 #' @note \code{sire}, \code{dam} and \code{label} must all have the
-#' same length and all labels in \code{sire} and \code{dam} must occur
-#' in \code{label}
+#'   same length and all labels in \code{sire} and \code{dam} must occur
+#'   in \code{label}
 #' @export
 #' @examples
 #' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
@@ -58,7 +58,6 @@ setAs("pedigree", "data.frame",
 #'
 #' @param x a pedigree object of class \linkS4class{pedigree}
 #' @return a data frame
-#'
 ped2DF <- function(x) {
     stopifnot(is(x, "pedigree"))
     lab <- x@label
@@ -138,9 +137,9 @@ Dmat <- function(ped)
 #'
 #' @param ped a pedigree that includes the individuals who occur in svec
 #' @param labs a character vector or a factor giving the labels to
-#'    which to restrict the relationship matrix. If \code{labs} is a
-#'    factor then the levels of the factor are used as the labels.
-#'    Default is the complete set of labels in the pedigree.
+#'   which to restrict the relationship matrix. If \code{labs} is a
+#'   factor then the levels of the factor are used as the labels.
+#'   Default is the complete set of labels in the pedigree.
 #' @return an object that inherits from \linkS4class{CHMfactor}
 #' @export
 #' @examples
@@ -173,9 +172,9 @@ relfactor <- function(ped, labs)
 #' Inverse of the Relationship Matrix
 #'
 #' @param ped a pedigree that includes the individuals who occur in svec
-#'    which to restrict the relationship matrix. If \code{labs} is a
-#'    factor then the levels of the factor are used as the labels.
-#'    Default is the complete set of labels in the pedigree.
+#'   which to restrict the relationship matrix. If \code{labs} is a
+#'   factor then the levels of the factor are used as the labels.
+#'   Default is the complete set of labels in the pedigree.
 #' @return an object that inherits from \linkS4class{CHMfactor}
 #' @export
 #' @examples
@@ -185,19 +184,20 @@ getAInv <- function(ped)
 {
     stopifnot(is(ped, "pedigree"))
     T_Inv <- as(ped, "sparseMatrix")
-    D_Inv <- diag(1/Dmat(ped))
-    aiMx<-t(T_Inv) %*% D_Inv %*% T_Inv
+    D_Inv <- Matrix::diag(1/Dmat(ped))
+    aiMx<-Matrix::t(T_Inv) %*% D_Inv %*% T_Inv
     dimnames(aiMx)[[1]]<-dimnames(aiMx)[[2]] <-ped@label
     aiMx
 }
 
 #' Additive Relationship Matrix
 #'
-#' Returns the additive relationship matrix for the pedigree \code{ped} .
+#' Returns the additive relationship matrix for the pedigree \code{ped}.
+#'
 #' @param ped a pedigree that includes the individuals who occur in svec
-#'    which to restrict the relationship matrix. If \code{labs} is a
-#'    factor then the levels of the factor are used as the labels.
-#'    Default is the complete set of labels in the pedigree.
+#'   which to restrict the relationship matrix. If \code{labs} is a
+#'   factor then the levels of the factor are used as the labels.
+#'   Default is the complete set of labels in the pedigree.
 #' @return an object that inherits from \linkS4class{CHMfactor}
 #' @keywords array
 #' @export
@@ -214,12 +214,11 @@ getA <- function(ped)
 
 #' Counts number of generations of ancestors for one subject. Use recursion.
 #'
-#' @param pede data frame with a pedigree and a column for the number
-#' of generations of each subject.
+#' @param pede data frame with a pedigree and a column for the number of
+#'   generations of each subject.
 #' @param id subject for which we want the number of generations.
 #' @return a data frame object with the pedigree and generation of
-#'    ancestors for subject id.
-#'
+#'   ancestors for subject id.
 getGenAncestors <- function(pede, id){
     j <- which(pede$id==id)
     parents <- c(pede$sire[j], pede$dam[j])
@@ -256,14 +255,16 @@ getGenAncestors <- function(pede, id){
     pede
 }
 
-#' Edits a disordered or incomplete pedigree,
-#'    1_ add labels for the sires and dams not listed as labels before.
-#'    2_ order pedigree based on recursive calls to getGenAncestors.
+#' Edits a disordered or incomplete pedigree.
+#'
+#' 1_ add labels for the sires and dams not listed as labels before.
+#' 2_ order pedigree based on recursive calls to getGenAncestors.
+#'
 #' @param sire integer vector or factor representation of the sires
 #' @param dam integer vector or factor representation of the dams
 #' @param label character vector of labels
 #' @param verbose logical to print the row of the pedigree that the
-#'    function is ordering. Default is FALSE.
+#'   function is ordering. Default is FALSE.
 #' @return a data frame with the pedigree ordered.
 #' @export
 #' @examples

@@ -7,14 +7,14 @@
 getGenAncestors(pede, id)
 }
 \arguments{
-\item{pede}{data frame with a pedigree and a column for the number
-of generations of each subject.}
+\item{pede}{data frame with a pedigree and a column for the number of
+generations of each subject.}
 
 \item{id}{subject for which we want the number of generations.}
 }
 \value{
 a data frame object with the pedigree and generation of
-   ancestors for subject id.
+  ancestors for subject id.
 }
 \description{
 Counts number of generations of ancestors for one subject. Use recursion.
