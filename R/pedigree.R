@@ -81,9 +81,9 @@ setMethod("tail", "pedigree", function(x, ...)
 #' @useDynLib pedigreeR pedigree_chol
 setMethod("chol", "pedigree",
           function(x, pivot, LINPACK) {
-              ttrans <- solve(t(as(x, "dtCMatrix")))
+              ttrans <- Matrix::solve(Matrix::t(as(x, "dtCMatrix")))
               .Call(pedigree_chol, x,
-                    as(.Call("Csparse_diagU2N", t(ttrans), PACKAGE = "Matrix"),
+                    as(.Call("Csparse_diagU2N", Matrix::t(ttrans), PACKAGE = "Matrix"),
                        "dtCMatrix"))
           })
 
@@ -149,14 +149,14 @@ relfactor <- function(ped, labs)
 {
     stopifnot(is(ped, "pedigree"))
     if (missing(labs))                  # square case
-        return(Diagonal(x = sqrt(Dmat(ped))) %*%
-               solve(t(as(ped, "sparseMatrix"))))
+        return(Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
+               Matrix::solve(Matrix::t(as(ped, "sparseMatrix"))))
     labs <- factor(labs) # drop unused levels from a factor
     stopifnot(all(labs %in% ped@label))
-    rect <- Diagonal(x = sqrt(Dmat(ped))) %*%
-        solve(t(as(ped, "sparseMatrix")), # rectangular factor
+    rect <- Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
+        Matrix::solve(Matrix::t(as(ped, "sparseMatrix")), # rectangular factor
               as(factor(ped@label, levels = ped@label),"sparseMatrix"))
-    tmpA<-crossprod(rect)
+    tmpA<-Matrix::crossprod(rect)
     tmp<- ped@label %in% labs
     tmpA<-tmpA[tmp,tmp]
 
@@ -164,7 +164,7 @@ relfactor <- function(ped, labs)
     labped<- as.character(labped[orlab])
     tmpA  <- tmpA[orlab, orlab]
     stopifnot(all.equal(as.character(labped), as.character(labs)))
-    relf<-chol(tmpA)
+    relf<-Matrix::chol(tmpA)
     dimnames(relf)[[1]]<- dimnames(relf)[[2]]<-labs
     relf
 }
@@ -207,7 +207,7 @@ getAInv <- function(ped)
 getA <- function(ped)
 {
     stopifnot(is(ped, "pedigree"))
-    aMx<-crossprod(relfactor(ped))
+    aMx<-Matrix::crossprod(relfactor(ped))
     dimnames(aMx)[[1]]<-dimnames(aMx)[[2]] <-ped@label
     aMx
 }
