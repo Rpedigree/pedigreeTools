@@ -18,4 +18,8 @@ in "Comparison of four direct algorithms for computing inbreeding
 coefficients" by Mehdi Sargolzaei and Hiroaki Iwaisaki, Animal
 Science Journal (2005) 76, 401--406.
 }
+\examples{
+ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+inbreeding(ped)
+}
 

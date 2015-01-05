@@ -22,4 +22,8 @@ Determine the right Cholesky factor of the relationship matrix for
 the pedigree \code{ped}, possibly restricted to the specific labels
 that occur in \code{labs}.
 }
+\examples{
+ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+relfactor(ped)
+}
 

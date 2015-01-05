@@ -13,6 +13,8 @@
 #' same length and all labels in \code{sire} and \code{dam} must occur
 #' in \code{label}
 #' @export
+#' @examples
+#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
 pedigree <- function(sire, dam, label) {
     n <- length(sire)
     labelex <- c(label, NA, 0)
@@ -97,6 +99,9 @@ setMethod("chol", "pedigree",
 #' @return the inbreeding coefficients as a numeric vector
 #' @export
 #' @useDynLib pedigreeR pedigree_inbreeding
+#' @examples
+#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' inbreeding(ped)
 inbreeding <- function(ped) {
     stopifnot(is(ped, "pedigree"))
     .Call(pedigree_inbreeding, ped)
@@ -110,6 +115,9 @@ inbreeding <- function(ped) {
 #' @param ped an object that inherits from class \linkS4class{pedigree}
 #' @return a numeric vector
 #' @export
+#' @examples
+#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' Dmat(ped)
 Dmat <- function(ped)
 {
     F <- inbreeding(ped)
@@ -135,6 +143,9 @@ Dmat <- function(ped)
 #'    Default is the complete set of labels in the pedigree.
 #' @return an object that inherits from \linkS4class{CHMfactor}
 #' @export
+#' @examples
+#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' relfactor(ped)
 relfactor <- function(ped, labs)
 {
     stopifnot(is(ped, "pedigree"))
@@ -167,6 +178,9 @@ relfactor <- function(ped, labs)
 #'    Default is the complete set of labels in the pedigree.
 #' @return an object that inherits from \linkS4class{CHMfactor}
 #' @export
+#' @examples
+#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' getAInv(ped)
 getAInv <- function(ped)
 {
     stopifnot(is(ped, "pedigree"))
@@ -185,13 +199,11 @@ getAInv <- function(ped)
 #'    factor then the levels of the factor are used as the labels.
 #'    Default is the complete set of labels in the pedigree.
 #' @return an object that inherits from \linkS4class{CHMfactor}
-#' @examples
-#' ## Example from chapter 2 of Mrode (2005)
-#' ped <- pedigree(sire = c(NA,NA,1, 1,4,5),
-#'                 dam  = c(NA,NA,2,NA,3,2), label= 1:6)
-#' (getA(ped))
 #' @keywords array
 #' @export
+#' @examples
+#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' getA(ped)
 getA <- function(ped)
 {
     stopifnot(is(ped, "pedigree"))
@@ -254,6 +266,13 @@ getGenAncestors <- function(pede, id){
 #'    function is ordering. Default is FALSE.
 #' @return a data frame with the pedigree ordered.
 #' @export
+#' @examples
+#' pede <- data.frame(sire=as.character(c(NA,NA,NA,NA,NA,1,3,5,6,4,8,1,10,8)),
+#'                    dam=as.character(c(NA,NA,NA,NA,NA,2,2,NA,7,7,NA,9,9,13)),
+#'                    label=as.character(1:14))
+#' pede <- pede[sample(replace=FALSE, 1:14),]
+#' pede <- editPed(sire=pede$sire, dam=pede$dam, label=pede$label)
+#' ped <- with(pede, pedigree(label=label, sire=sire, dam=dam))
 editPed <- function(sire, dam, label, verbose = FALSE)
 {
     nped <- length(sire)

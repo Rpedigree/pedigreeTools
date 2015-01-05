@@ -18,4 +18,8 @@ an object that inherits from \linkS4class{CHMfactor}
 \description{
 Inverse of the Relationship Matrix
 }
+\examples{
+ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+getAInv(ped)
+}
 

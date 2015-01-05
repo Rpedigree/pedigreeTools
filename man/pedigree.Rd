@@ -25,4 +25,7 @@ constructor is to use coercions to make the calls easier.
 same length and all labels in \code{sire} and \code{dam} must occur
 in \code{label}
 }
+\examples{
+ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+}
 

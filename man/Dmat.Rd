@@ -16,4 +16,8 @@ a numeric vector
 Determine the diagonal factor in the decomposition of the
 relationship matrix A as TDT' where T is unit lower triangular.
 }
+\examples{
+ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+Dmat(ped)
+}
 
