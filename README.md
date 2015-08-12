@@ -16,7 +16,7 @@ install_git('https://github.com/Rpedigree/pedigreeR/')                #3# instal
 ```
 ### Examples
 
-  1. Completing and sorting a pedigree.
+  1. [Completing and sorting a pedigree](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example1.md).
   2. Computing inbreeding, additive relationships and funcitons of it.
   3. Fiting pedigree mixed effects models using pedigreeR and lmer.
   4. Pedigree analyses for self-polinated species.
