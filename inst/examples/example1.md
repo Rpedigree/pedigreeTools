@@ -3,8 +3,18 @@
 Before creating a pedigree object, the pedigree must be: (i) completed, that is, any individual that appears as ancestor must also appear as a row in the pedigree, and (ii) sorted, so that ancestors preceed progeny in the pedigree. The functions ```editPed()``` can be used to complete and sort pedigrees. The following example illustrates the use of this function.
 
 ```R
-
+ library(pedigreeR)
+ 
+ animal=c()
+ sire=c()
+ dam=c()
+ 
+ PED=editPed()
+ 
+ head(PED)
+ 
+ 
 ```
 
-[Home]()
+[Home](https://github.com/Rpedigree/pedigreeR)
  
