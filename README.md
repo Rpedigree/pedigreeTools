@@ -1,6 +1,6 @@
 pedigreeR
 =========
-###Installing BGLR from GitHub
+###Installing pedigreeR from GitHub
 
 ```R
 R functions related to pedigrees
