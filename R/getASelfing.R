@@ -1,5 +1,3 @@
-library(pedigreeR)
-
 ### Function to get A using pedigreemm
 
 getASelfing<-function(ID,Par1,Par2,nCycles,sepChar='x-x-x',verbose=FALSE,fileNewPed=NULL,computeA=TRUE)
