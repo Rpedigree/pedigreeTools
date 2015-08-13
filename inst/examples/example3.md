@@ -1,7 +1,7 @@
 #### Example: Fiting pedigree mixed effects models using pedigreeR and lmer.
 
 ```R
-library(pedigreemm)
+library(pedigreeR)
 
 ped_file = sysyem.file("data/mice_pedigree.txt")
 ped_info = read.table(file=ped_file,header=TRUE,
