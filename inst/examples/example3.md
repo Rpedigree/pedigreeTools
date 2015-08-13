@@ -2,7 +2,8 @@
 
 The mice data comes from an experiment carried out to detect and locate QTLs for complex traits in a 
 mice population (Valdar et al. 2006a; 2006b). This data has already been 
-analyzed for comparing genome-assisted genetic evaluation methods (Legarra et al. 2008). 
+analyzed for comparing genome-assisted genetic evaluation methods 
+([Legarra et al. 2008](http://www.ncbi.nlm.nih.gov/pubmed/18757934)).
 
 The information in contained in 3 files: 
 
