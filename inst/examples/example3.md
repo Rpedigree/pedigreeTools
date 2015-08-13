@@ -1,7 +1,7 @@
 #### Example: Fiting pedigree mixed effects models using pedigreeR and lmer.
 
 The mice data comes from an experiment carried out to detect and locate QTLs for complex traits in a 
-mice population (Valdar et al. 2006a; 2006b). This data has already been 
+mice population ([Valdar et al. 2006a](http://www.ncbi.nlm.nih.gov/pubmed/16832355); [2006b](http://www.ncbi.nlm.nih.gov/pubmed/16888333)). This data has already been 
 analyzed for comparing genome-assisted genetic evaluation methods 
 ([Legarra et al. 2008](http://www.ncbi.nlm.nih.gov/pubmed/18757934)).
 
