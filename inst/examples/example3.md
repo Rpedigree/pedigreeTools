@@ -12,8 +12,8 @@ mat=as.character(ped_info$MAT)
 id=as.character(ped_info$IID)
 
 #Complete the pedigree
-tmp=unique(c(as.character(geno$PAT),
-             as.character(geno$MAT)))
+tmp=unique(c(as.character(ped_info$PAT),
+             as.character(ped_info$MAT)))
             
 pat=c(rep(NA,length(tmp)),pat)
 mat=c(rep(NA,length(tmp)),mat)
