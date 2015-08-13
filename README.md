@@ -16,10 +16,10 @@ library(devtools)                                                     #2# load t
 install_git('https://github.com/Rpedigree/pedigreeR/')                #3# install pedigreeR from GitHub
 ```
 ### Examples
-  1. [Installing and loading library](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/install.md).
-  2. [Completing and sorting a pedigree](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example1.md).
-  3. [Computing inbreeding, additive relationships and funcitons of it](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example2.md).
-  4. [Fiting pedigree mixed effects models using pedigreeR and lmer](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example3.md).
-  5. [Pedigree analyses for self-polinated species](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example4.md).
-  6. [Cross-validation analyses with pedigreeR and lmer](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example5.md).
+ 
+  1. [Completing and sorting a pedigree](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example1.md).
+  2. [Computing inbreeding, additive relationships and funcitons of it](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example2.md).
+  3. [Fiting pedigree mixed effects models using pedigreeR and lmer](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example3.md).
+  4. [Pedigree analyses for self-polinated species](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example4.md).
+  5. [Cross-validation analyses with pedigreeR and lmer](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example5.md).
 
