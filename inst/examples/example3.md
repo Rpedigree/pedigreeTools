@@ -46,18 +46,33 @@ rownames(A)=colnames(A)=id
 #####################################################################
 #Phenotypes
 #####################################################################
+out=merge(x=obesity,y=cage,by.x="SUBJECT.NAME",by.y="IID")
 
-Obesity=read.table(file="Obesity.txt",header=TRUE)
-cage=read.table(file="Cage.txt",header=TRUE)
-out=merge(x=Obesity,y=cage,by.x="SUBJECT.NAME",by.y="IID")
-
-#Remove records with missing values
-index=!is.na(out$Obesity.BMI) & !is.na(out$cage) & !is.na(out$Date.Year) & !is.na(out$Date.Season) & !is.na(out$Date.Month) & !is.na(out$EndNormalBW)
+#Remove records with missing 
+index=rowSums(is.na(out))<1
 pheno=out[index,] 
 
-#Remove individuals without pheno info
-index=as.character(pheno$SUBJECT.NAME)%in%as.character(rownames(A))
+#Common individuals with phenotypes and pedigree info
+common=intersect(as.character(pheno$SUBJECT.NAME),rownames(A))
+
+index=as.character(pheno$SUBJECT.NAME)%in%common
 pheno=pheno[index,]
+
+index=rownames(A)%in%common
+
+A=A[index,index]
+
+#Sort the pedigree information and pheno information so that they match
+index=order(as.character(pheno$SUBJECT.NAME))
+pheno=pheno[index,]
+
+index=order(rownames(A))
+A=A[index,index]
+
+#Check if every thing matches
+if(any(colnames(A)!=as.character(pheno$SUBJECT.NAME))) stop("Ordering problem\n")
+
+#Up to here we have phenotypic and genotypic information
 
 ```
 [Home](https://github.com/Rpedigree/pedigreeR)
