@@ -22,7 +22,7 @@ Get the inverse of A
  image(A<-getA(ped))
 ```
 
-<img src="https://github.com/Rpedigree/pedigreeR/priors.jpg" width="500">
+<img src="https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/pedA.jpg" width="500">
 
 [Home](https://github.com/Rpedigree/pedigreeR)
  
