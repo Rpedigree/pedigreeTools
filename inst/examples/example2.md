@@ -21,5 +21,8 @@ Get the inverse of A
  ```R
  image(A<-getA(ped))
 ```
+
+<img src="https://github.com/Rpedigree/pedigreeR/priors.jpg" width="500">
+
 [Home](https://github.com/Rpedigree/pedigreeR)
  
