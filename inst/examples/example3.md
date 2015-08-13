@@ -3,7 +3,7 @@
 ```R
 library(pedigreeR)
 
-ped_file = sysyem.file("data/mice_pedigree.txt")
+ped_file = system.file("data/mice_pedigree.txt")
 ped_info = read.table(file=ped_file,header=TRUE,
                       na.strings="-9",check.names=FALSE)
                         
