@@ -4,16 +4,11 @@ Before creating a pedigree object, the pedigree must be: (i) completed, that is,
 
 ```R
  library(pedigreeR)
- 
  animal=c()
  sire=c()
  dam=c()
- 
- PED=editPed()
- 
+ PED=editPed() 
  head(PED)
- 
- 
 ```
 
 [Home](https://github.com/Rpedigree/pedigreeR)
