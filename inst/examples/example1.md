@@ -4,10 +4,21 @@ Before creating a pedigree object, the pedigree must be: (i) completed, that is,
 
 | Subject  |      Sire     |  Dam |
 |----------:|-------------:|------:|
-| 1	| NA| 	12
-| 2	| 11| 10
-| 3	| 1	| 2
-| 4	| 1	| 2
+| 1	| NA| 	NA
+| 2	| NA| 	NA
+| 3	| NA| 	NA
+| 4	| NA| 	NA
+| 5	| NA| 	NA
+| 6	| 1| 2
+| 7	| 3	| 2
+| 8	| 5	| NA
+| 9	| 6| 	7
+| 10	| 4| 7
+| 11	| 8	| NA
+| 12	| 1	| 9
+| 13	| 10| 9
+| 14	| 8| 13
+
 
 #### Example: Computing inbreeding, additive relationships and functions of it.
 
