@@ -1,12 +1,7 @@
 #R Code
 
-#Load routines for pedigree
-source("~/Desktop/Bayer/getASelfing.R")
-
-
-
-getASelfing=function(ID,Par1,Par2,nCycles,nCyclesDefault, sepChar='-F', verbose=FALSE, fileNewPed=NULL, computeA=TRUE){
-	library(pedigreemm)
+getASelfing=function(ID,Par1,Par2,nCycles,nCyclesDefault, sepChar='-F', verbose=FALSE, fileNewPed=NULL, computeA=TRUE)
+{
 
 ## Completing and sorting pedigree
 TMP<-as.data.frame(editPed(sire=Par1,dam=Par2,label=ID))
@@ -78,7 +73,9 @@ TMP<-as.data.frame(editPed(sire=Par1,dam=Par2,label=ID))
 }   
    
 
-
+#This code will be used in EXAMPLES!!!!
+if(FALSE)
+{
 
 pedigree_data=read.csv(file="~/Desktop/Bayer/MCP2009_pedigree.csv",header=TRUE)
 
@@ -107,3 +104,5 @@ plot(diag(A),ylim=c(0,2))
  plot(cumsum(eigenValues)/sum(eigenValues),ylab='Proportion of variance',col=4,cex=.7,type='o');abline(h=1,lty=2)
  
  plot(SVD$u,col=2,xlab='1st PC',ylab='2nd PC')
+
+}
