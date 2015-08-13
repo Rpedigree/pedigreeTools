@@ -1,4 +1,4 @@
-library(pedigreemm)
+library(pedigreeR)
 
 ### Function to get A using pedigreemm
 
