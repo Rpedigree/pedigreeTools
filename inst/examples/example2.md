@@ -11,7 +11,7 @@ pede<-data.frame(sire=as.character(c(NA,NA,NA,NA,NA,1,3,5,6,4,8,1,10,8)),
         ped<- with(pede, pedigree(label=label, sire=sire, dam=dam))
 
 ```
-Missing labels
+Missing labels and not sorted pedigrees
 ```R
       #(2) With missing labels
         pede<-data.frame(sire=as.character(c(NA,1,3,5,6,4,8,1,10,8)),
