@@ -1,5 +1,16 @@
 #### Example: Fiting pedigree mixed effects models using pedigreeR and lmer.
 
+The mice data comes from an experiment carried out to detect and locate QTLs for complex traits in a 
+mice population (Valdar et al. 2006a; 2006b). This data has already been 
+analyzed for comparing genome-assisted genetic evaluation methods (Legarra et al. 2008). 
+
+The information in contained in 3 files: 
+
+* mice_pedigree.txt: Pedigree information for the individuals.
+* Obesity.txt: Obesity related traits for mice (e.g. BMI) and additional information about body weight, season month, day, etc.
+* cage.txt: informmation related cages where individuals were grown.
+
+
 ```R
 library(pedigreeR)
 
