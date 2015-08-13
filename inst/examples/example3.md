@@ -11,9 +11,6 @@ ped_file = system.file("data/mice_pedigree.txt",package="pedigreeR")
 obesity_file=system.file("data/Obesity.txt", package="pedigreeR")
 cage_file=system.file("data/Cage.txt",package="pedigreeR")
 
-obesity=read.table(file=obesity_file,header=TRUE)
-cage=read.table(file=cage_file,header=TRUE)
-
 #pedigree info
 ped_info = read.table(file=ped_file,header=TRUE,
                       na.strings="-9",check.names=FALSE)
