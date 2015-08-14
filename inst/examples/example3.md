@@ -18,6 +18,8 @@ library(pedigreeR)
 #####################################################################
 
 mice_info= system.file("data/mice.RData",package="pedigreeR")
+load(mice_info)
+rm(mice_info)
 
 #Processing the pedigree
 pat=as.character(mice$PAT)
