@@ -5,11 +5,9 @@ mice population ([Valdar et al. 2006a](http://www.ncbi.nlm.nih.gov/pubmed/168323
 analyzed for comparing genome-assisted genetic evaluation methods 
 ([Legarra et al. 2008](http://www.ncbi.nlm.nih.gov/pubmed/18757934)).
 
-The information in contained in 3 files: 
-
-* mice_pedigree.txt: Pedigree information for the individuals.
-* Obesity.txt: Obesity related traits for mice (e.g. BMI) and additional information about body weight, season month, day, etc.
-* cage.txt: informmation related cages where individuals were grown.
+The information in contained in the file mice.RData (see the object mice), and contains pedigree information,
+Obesity related traits (e.g. BMI) and additional information about body weight, season, month, day, etc. It also contains
+information related to the cages where individuals were grown.
 
 
 ```R
@@ -19,9 +17,8 @@ library(pedigreeR)
 #Reading the information
 #####################################################################
 
-ped_file = system.file("data/mice_pedigree.txt",package="pedigreeR")
-obesity_file=system.file("data/Obesity.txt", package="pedigreeR")
-cage_file=system.file("data/Cage.txt",package="pedigreeR")
+mice_info= system.file("data/mice.RData",package="pedigreeR")
+
 
 #pedigree info
 ped_info = read.table(file=ped_file,header=TRUE,
