@@ -19,25 +19,13 @@ library(pedigreeR)
 
 mice_info= system.file("data/mice.RData",package="pedigreeR")
 
-
-#pedigree info
-ped_info = read.table(file=ped_file,header=TRUE,
-                      na.strings="-9",check.names=FALSE)
-
-#phenotypes info
-obesity=read.table(file=obesity_file, header=TRUE)
-
-#cage info
-cage=read.table(file=cage_file,header=TRUE)
-
 #Processing the pedigree
-pat=as.character(ped_info$PAT)
-mat=as.character(ped_info$MAT)
-id=as.character(ped_info$IID)
+pat=as.character(mice$PAT)
+mat=as.character(mice$MAT)
+id=as.character(mice$SUBJECT.NAME)
 
 #Complete the pedigree
-tmp=unique(c(as.character(ped_info$PAT),
-             as.character(ped_info$MAT)))
+tmp=unique(c(pat,mat))
             
 pat=c(rep(NA,length(tmp)),pat)
 mat=c(rep(NA,length(tmp)),mat)
@@ -52,14 +40,9 @@ rownames(A)=colnames(A)=id
 #####################################################################
 #Phenotypes
 #####################################################################
-out=merge(x=obesity,y=cage,by.x="SUBJECT.NAME",by.y="IID")
-
-#Remove records with missing 
-index=rowSums(is.na(out))<1
-pheno=out[index,] 
 
 #Common individuals with phenotypes and pedigree info
-common=intersect(as.character(pheno$SUBJECT.NAME),rownames(A))
+common=intersect(as.character(mice$SUBJECT.NAME),rownames(A))
 
 index=as.character(pheno$SUBJECT.NAME)%in%common
 pheno=pheno[index,]
