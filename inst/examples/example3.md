@@ -55,7 +55,7 @@ A=A[index,index]
 
 #Sort the pedigree information and pheno information so that they match
 index=order(as.character(pheno$SUBJECT.NAME))
-pheno=pheno[index,]
+mice=mice[index,]
 
 index=order(rownames(A))
 A=A[index,index]
