@@ -44,8 +44,8 @@ rownames(A)=colnames(A)=id
 #Common individuals with phenotypes and pedigree info
 common=intersect(as.character(mice$SUBJECT.NAME),rownames(A))
 
-index=as.character(pheno$SUBJECT.NAME)%in%common
-pheno=pheno[index,]
+index=as.character(mice$SUBJECT.NAME)%in%common
+mice=mice[index,]
 
 index=rownames(A)%in%common
 
@@ -59,7 +59,7 @@ index=order(rownames(A))
 A=A[index,index]
 
 #Check if every thing matches
-if(any(colnames(A)!=as.character(pheno$SUBJECT.NAME))) stop("Ordering problem\n")
+if(any(colnames(A)!=as.character(mice$SUBJECT.NAME))) stop("Ordering problem\n")
 
 #Up to here we have phenotypic and genotypic information
 
