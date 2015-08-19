@@ -8,8 +8,9 @@ R-functions that we have created to accommodate selfing.
 
 library(pedigreeR)
 
+pedigree_info=system.file("data/sample_pedigree_selfing.csv",package="pedigreeR")
 
-pedigree_data=read.csv(file=,header=TRUE)
+pedigree_data=read.csv(file=pedigree_info,header=TRUE)
 
 
 nCycles=substr(pedigree_data$Generation,start=2,stop=2)
@@ -17,7 +18,9 @@ nCycles=as.integer(nCycles)
 ID=pedigree_data$id
 Par1=pedigree_data$Par1
 Par2=pedigree_data$Par2
+
 A=getASelfing(ID=ID,Par1=Par1,Par2=Par2,nCycles=nCycles,nCyclesDefault=6)
+
 
 ```
 
