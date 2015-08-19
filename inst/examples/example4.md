@@ -6,6 +6,8 @@ R-functions that we have created to accommodate selfing.
 
 ```R
 
+library(pedigreeR)
+
 ```
 
 [Home](https://github.com/Rpedigree/pedigreeR)
