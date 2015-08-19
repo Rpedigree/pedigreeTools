@@ -8,6 +8,17 @@ R-functions that we have created to accommodate selfing.
 
 library(pedigreeR)
 
+
+pedigree_data=read.csv(file=,header=TRUE)
+
+
+nCycles=substr(pedigree_data$Generation,start=2,stop=2)
+nCycles=as.integer(nCycles)
+ID=pedigree_data$id
+Par1=pedigree_data$Par1
+Par2=pedigree_data$Par2
+A=getASelfing(ID=ID,Par1=Par1,Par2=Par2,nCycles=nCycles,nCyclesDefault=6)
+
 ```
 
 [Home](https://github.com/Rpedigree/pedigreeR)
