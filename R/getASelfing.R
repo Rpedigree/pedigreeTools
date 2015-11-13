@@ -28,26 +28,24 @@ TMP<-as.data.frame(editPed(sire=Par1,dam=Par2,label=ID))
 		newPED[row,2:3]<-PED[i,2:3]
 		newPED[row,4]<-paste(PED[i,4],0,sep=sepChar)
 	
-		if(cycles>1){
+		# now we update the id in the sire and dam columns
+		newID<-paste(id,cycles,sep=sepChar)
+		tmp<-which(PED$sire==id)
+		if(length(tmp)>0){
+			PED$sire[tmp]<-newID
+		}
+				
+		tmp<-which(PED$dam==id)
+		if(length(tmp)>0){
+			PED$dam[tmp]<-newID
+		}
+	
+		if(cycles>0){
 			for(j in 1:cycles){
 				row<-row+1
 				newPED[row,1]<-paste(id,j,sep=sepChar)
 				newPED[row,2:3]<-rep(newPED[(row-1),1],2)
 				newPED[row,4]<-paste(generation,j,sep=sepChar)
-			}
-		
-			# now we update the id
-			newID<-paste(id,cycles,sep=sepChar)
-			#tmp<-grep(PED$sire,pattern=id)#*#
-			tmp<-which(PED$sire==id)
-			if(length(tmp)>0){
-				PED$sire[tmp]<-newID
-			}
-				
-			#tmp<-grep(PED$dam,pattern=id)
-			tmp<-which(PED$dam==id)
-			if(length(tmp)>0){
-				PED$dam[tmp]<-newID
 			}
 		
 		}
