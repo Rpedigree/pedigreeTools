@@ -21,6 +21,10 @@ Get the inverse of A
  ```R
  image(A<-getA(ped))
 ```
+Get the Cholesky factor of A
+ ```R
+relFactor(ped)
+```
 
 <img src="https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/pedA.jpg" width="500">
 
