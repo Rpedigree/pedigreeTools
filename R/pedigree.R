@@ -217,9 +217,10 @@ getA <- function(ped)
 #' @param pede data frame with a pedigree and a column for the number of
 #'   generations of each subject.
 #' @param id subject for which we want the number of generations.
+#' @param ngen number of generation
 #' @return a data frame object with the pedigree and generation of
 #'   ancestors for subject id.
-getGenAncestors <- function(pede, id){
+getGenAncestors <- function(pede, id, ngen=NULL){
     j <- which(pede$id==id)
     parents <- c(pede$sire[j], pede$dam[j])
     parents <- parents[!is.na(parents)]
@@ -233,6 +234,8 @@ getGenAncestors <- function(pede, id){
     tmpgenP1 <- pede$gene[pede$id==parents[1]]
     if( is.na(tmpgenP1))
     {
+        #if ngen is not null, and not cero, ngen<- ngen-1
+        #if ngen is cero, do not call recurrsively anymore
         pede <- getGenAncestors(pede, parents[1])
         genP1  <- 1 + pede$gene[pede$id==parents[1]]
     }  else {
