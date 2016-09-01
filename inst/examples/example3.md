@@ -1,70 +1,68 @@
-#### Example: Fiting pedigree mixed effects models using pedigreeR and lmer.
+### Example 3: Subsetting a Pedigree using ```prunePed``` 
 
-The mice data comes from an experiment carried out to detect and locate QTLs for complex traits in a 
-mice population ([Valdar et al. 2006a](http://www.ncbi.nlm.nih.gov/pubmed/16832355); [2006b](http://www.ncbi.nlm.nih.gov/pubmed/16888333)). This data has already been 
-analyzed for comparing genome-assisted genetic evaluation methods 
-([Legarra et al. 2008](http://www.ncbi.nlm.nih.gov/pubmed/18757934)).
+#### Section A : Creating the example pedigree and Scrambling it.
 
-The information in contained in the file mice.RData (see the object mice), and contains pedigree information,
-Obesity related traits (e.g. BMI) and additional information about body weight, season, month, day, etc. It also contains
-information related to the cages where individuals were grown.
-
+Following the previous examples, we start with a scarmbled version of the example data frame pedigree ```pedFrame```
 
 ```R
-library(pedigreeR)
-
-#####################################################################
-#Reading the information
-#####################################################################
-
-mice_info= system.file("data/mice.RData",package="pedigreeR")
-load(mice_info)
-rm(mice_info)
-
-#Processing the pedigree
-pat=as.character(mice$PAT)
-mat=as.character(mice$MAT)
-id=as.character(mice$SUBJECT.NAME)
-
-#Complete the pedigree
-tmp=unique(c(pat,mat))
-            
-pat=c(rep(NA,length(tmp)),pat)
-mat=c(rep(NA,length(tmp)),mat)
-id=c(tmp,id)
-
-tmp=pedigree(pat,mat,id)
-
-#Using the new function, version 0.2.5
-A=as.matrix(getA(tmp))
-rownames(A)=colnames(A)=id
-
-#####################################################################
-#Phenotypes
-#####################################################################
-
-#Common individuals with phenotypes and pedigree info
-common=intersect(as.character(mice$SUBJECT.NAME),rownames(A))
-
-index=as.character(mice$SUBJECT.NAME)%in%common
-mice=mice[index,]
-
-index=rownames(A)%in%common
-
-A=A[index,index]
-
-#Sort the pedigree information and pheno information so that they match
-index=order(as.character(mice$SUBJECT.NAME))
-mice=mice[index,]
-
-index=order(rownames(A))
-A=A[index,index]
-
-#Check if every thing matches
-if(any(colnames(A)!=as.character(mice$SUBJECT.NAME))) stop("Ordering problem\n")
-
-#Up to here we have phenotypic and genotypic information
+#Creating the example pedigree
+pedFrame<-data.frame(sire=as.character(c(NA,NA,NA,NA,NA,1,3,5,6,4,8,1,10,8)),
+                  dam= as.character(c(NA,NA,NA,NA,NA,2,2,NA,7,7,NA,9,9,13)),
+                  label=as.character(1:14))
+#Scrambling the example pedigree:
+pedScram<- pedFrame[sample(replace=FALSE, 1:14),] 
 
 ```
+
+#### Section B: Using ```prunePed``` to subset the pedigree.
+
+The ```prunePED``` function works by setting a baseline population through a vector of ids, and the number of previous generations ( sires , dams, grandsires and granddams etc. of the baseline population )  the user wishes to select. Here the number of previous generations to select is set through the ```ngen``` argument of prunePED. This selection ends where the parents are unknown regardless of ```ngen```. 
+
+Here we start with an example baseline population vector (```selectVector```) : ```c(12,9,11)``` 
+And an ```ngen``` value ```2```
+
+It can be readily seen from the following pictoral representation of the pedigree that the ids that should be returned along with ```c(12,9,11)``` are ```c(1,2,3,5,6,7,8)```
+
+```R
+# Applying prunePED to subset the scrambled pedigree 
+library(pedigreeR)
+pedSelect <- prunePED(pedScram,selectVector=c(12,9,11),ngen=2) 
+
+pedSelect
+    sire dam label
+ 1:   NA  NA     1
+ 2:    6   7     9
+ 3:    3   2     7
+ 4:    1   2     6
+ 5:    5  NA     8
+ 6:   NA  NA     3
+ 7:   NA  NA     2
+ 8:   NA  NA     5
+ 9:    1   9    12
+10:    8  NA    11
+
+```
+#### Section C: Producing a valid pedigree object from the output of ```prunePED```
+
+Following Example 1, we create a sorted and complete pedigree object ```pedFinal``` that can be used for fitting models from the output of prunePED.
+
+```R
+pedEdited <- editPed(sire=pedSelect$sire,dam=pedSelect$dam,label=pedSelect$label)
+pedFinal <- with(pedEdited, pedigree(label=label,sire=sire,dam=dam))
+
+ pedFinal
+   sire  dam
+1  <NA> <NA>
+3  <NA> <NA>
+2  <NA> <NA>
+5  <NA> <NA>
+7     3    2
+6     1    2
+8     5 <NA>
+9     6    7
+11    8 <NA>
+12    1    9
+```
+
 [Home](https://github.com/Rpedigree/pedigreeR)
  
