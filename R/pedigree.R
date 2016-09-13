@@ -309,3 +309,35 @@ editPed <- function(sire, dam, label, verbose = FALSE)
                     stringsAsFactors =F)
     ans[ord,]
 }
+
+#' Subsets a pedigree for a specified vector of individuals upto a 
+#' specified number of previous generations using Recursion.
+  
+#' @param ped Data Frame pedigree to be subset
+#' @param selectVector Vector of individuals to select from pedigree
+#' @param ngen Number of previous generations of parents to select starting from selectVector. 
+  
+#' @return Returns Subsetted pedigree as a DataFrame. 
+
+prunePed <- function(ped,selectVector,ngen=2){
+  
+  ped <- as.matrix(ped)
+
+  returnPed <- matrix(c(NA,NA,NA),nrow=1,ncol=3)
+                          
+  findBase <- ped[,"label"] %in% selectVector 
+  basePed <- ped[findBase,]
+  findSire <- ped[,"label"] %in% basePed[,"sire"]
+  findDam <- ped[,"label"] %in% basePed[,"dam"]
+  
+  newSelVec <- ped[findSire|findDam,"label"]
+  newSelVec <- newSelVec[!(newSelVec %in% selectVector)]
+  
+  if(ngen!=-1){
+  returnPed <- basePed
+  returnPed <- unique(rbind(returnPed,recursePrune(ped,newSelVec,ngen-1)))
+  returnPed <- returnPed[rowSums(is.na(returnPed))!=3,]
+  }else{return(returnPed)}
+  
+}
+
