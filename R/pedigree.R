@@ -338,6 +338,5 @@ prunePed <- function(ped,selectVector,ngen=2){
   returnPed <- unique(rbind(returnPed,recursePrune(ped,newSelVec,ngen-1)))
   returnPed <- returnPed[rowSums(is.na(returnPed))!=3,]
   }else{return(returnPed)}
-  
-}
 
+}
