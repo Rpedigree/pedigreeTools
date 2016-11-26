@@ -19,7 +19,7 @@ install_git('https://github.com/Rpedigree/pedigreeR/')                #3# instal
  
   1. [Completing and sorting a pedigree](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example1.md).
   2. [Computing inbreeding, additive relationships and funcitons of it](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example2.md).
-  3. [Fiting pedigree mixed effects models using pedigreeR and lmer](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example3.md).
+  3. [Subsetting a Pedigree using PrunePed](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example3.md).
   4. [Pedigree analyses for self-polinated species](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example4.md).
   5. [Cross-validation analyses with pedigreeR and lmer](https://github.com/Rpedigree/pedigreeR/blob/master/inst/examples/example5.md).
 
