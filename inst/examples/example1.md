@@ -37,7 +37,7 @@ Here is some example code that :
                   label=as.character(5:14))
         
         ## Scramble incomplete pedigree
-        PedScramb <- PedInc[sample(replace=FALSE, 1:10),] 
+        PedScram <- PedInc[sample(replace=FALSE, 1:10),] 
 
 ```
 #### Section B : Reconstructing the complete, sorted pedigree and converting it into a valid 'Pedigree' object
