@@ -339,6 +339,8 @@ prunePed <- function(ped,selectVector,ngen=2){
   returnPed <- returnPed[rowSums(is.na(returnPed))!=3,]
   }else{return(returnPed)}
 
+return(as.data.frame(returnPed))
+
 }
 
 
