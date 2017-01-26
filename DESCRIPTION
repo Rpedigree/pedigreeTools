@@ -15,4 +15,7 @@ LazyLoad: yes
 LazyData: yes
 License: MIT
 URL: https://github.com/Rpedigree/pedigreeR/
+<<<<<<< HEAD
 RoxygenNote: 5.0.1
+=======
+>>>>>>> dd83974afe0494cdbc55467f9ce98a9beb64c819
