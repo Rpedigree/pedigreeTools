@@ -24,9 +24,9 @@ And an ```ngen``` value ```2```
 It can be readily seen from the following pictoral representation of the pedigree that the ids that should be returned along with ```c(12,9,11)``` are ```c(1,2,3,5,6,7,8)```
 
 ```R
-# Applying prunePED to subset the scrambled pedigree 
+# Applying prunePed to subset the scrambled pedigree 
 library(pedigreeR)
-pedSelect <- prunePED(pedScram,selectVector=c(12,9,11),ngen=2) 
+pedSelect <- prunePed(pedScram,selectVector=c(12,9,11),ngen=2) 
 
 pedSelect
     sire dam label
