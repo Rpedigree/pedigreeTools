@@ -318,10 +318,8 @@ editPed <- function(sire, dam, label, verbose = FALSE)
 #' @param ngen Number of previous generations of parents to select starting from selectVector. 
   
 #' @return Returns Subsetted pedigree as a DataFrame. 
-<<<<<<< HEAD
 #' @export
-=======
->>>>>>> dd83974afe0494cdbc55467f9ce98a9beb64c819
+
 
 prunePed <- function(ped,selectVector,ngen=2){
   
