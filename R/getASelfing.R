@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #' Extends the pedigree according to number of selfing cycles 
 #' and also optionally computes the Additive Relationship Matrix for that pedigree.
 #' @param ID is a vector of individual IDs
@@ -13,9 +12,6 @@
 #' @return Returns A matrix computed for the extended pedigree if computeA=TRUE
 #' @export
 
-
-=======
->>>>>>> dd83974afe0494cdbc55467f9ce98a9beb64c819
 #R Code
 
 getASelfing=function(ID,Par1,Par2,nCycles,nCyclesDefault, sepChar='-F', verbose=FALSE, fileNewPed=NULL, computeA=TRUE)
