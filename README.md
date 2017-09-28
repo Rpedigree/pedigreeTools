@@ -7,7 +7,7 @@ Developers: Ana I. Vazquez & Douglas M. Bates.
 Contributors: Paulino Perez-Rodriguez & Gustavo de los Campos.
 
 
-###Installing pedigreeR from GitHub
+### Installing pedigreeR from GitHub
 
 ```R
 #R functions related to pedigrees
