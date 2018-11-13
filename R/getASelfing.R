@@ -7,7 +7,7 @@
 #' @param nCyclesDefault default value of nCycles
 #' @param sepChar 
 #' @param verbose 
-#' @param fileNewPed Output csv file (comma separated value) with columns ‘label’, ‘sire’, ‘dam’, with the full pull pedigree expanded taking into account the selfing cycles
+#' @param fileNewPed Output csv file (comma separated value) with columns 'label', 'sire', 'dam', with the full pull pedigree expanded taking into account the selfing cycles
 #' @param computeA Indicates if the A matrix is to be computed
 #' @return Returns A matrix computed for the extended pedigree if computeA=TRUE
 #' @export
@@ -113,7 +113,7 @@ plot(diag(A),ylim=c(0,2))
  eigenValues<-SVD$d^2
  plot(eigenValues,ylab='Eeigen-value (A)',col=4,cex=.7)
  
- plot(cumsum(eigenValues)/sum(eigenValues),ylab='Proportion of variance',col=4,cex=.7,type='o');abline(h=1,lty=2)
+ plot(cumsum(eigenValues)/sum(eigenValues),ylab= 'Proportion of variance',col=4,cex=.7,type='o');abline(h=1,lty=2)
  
  plot(SVD$u,col=2,xlab='1st PC',ylab='2nd PC')
 
