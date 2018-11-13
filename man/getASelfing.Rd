@@ -19,11 +19,11 @@ getASelfing(ID, Par1, Par2, nCycles, nCyclesDefault, sepChar = "-F",
 
 \item{nCyclesDefault}{default value of nCycles}
 
-\item{sepChar}{}
+\item{sepChar}{sepChar}
 
-\item{verbose}{}
+\item{verbose}{print progress}
 
-\item{fileNewPed}{Output csv file (comma separated value) with columns ‘label’, ‘sire’, ‘dam’, with the full pull pedigree expanded taking into account the selfing cycles}
+\item{fileNewPed}{Output csv file (comma separated value) with columns 'label', 'sire', 'dam', with the full pull pedigree expanded taking into account the selfing cycles}
 
 \item{computeA}{Indicates if the A matrix is to be computed}
 }
