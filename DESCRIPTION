@@ -1,7 +1,7 @@
 Package: pedigreeR
 Version: 0.0.1
 Date: 2014-11-26
-Title: R tools for working with pedigrees
+Title: R Tools for Working with Pedigrees
 Author: Douglas Bates and Ana Ines Vazquez,
 Maintainer: Ana Ines Vazquez <anainesvs@gmail.com>
 Description: Tools to sort pedigrees and to extract the inbreeding coefficients
