@@ -15,5 +15,4 @@ LazyLoad: yes
 LazyData: yes
 License: MIT + file LICENSE
 URL: https://github.com/Rpedigree/pedigreeR/
-RoxygenNote: 5.0.1
-
+RoxygenNote: 6.1.1
