@@ -53,7 +53,7 @@ setAs("pedigree", "data.frame",
 #'
 #' Express a pedigree as a data frame with \code{sire} and
 #' \code{dam} stored as factors.  If the pedigree is an object of
-#' class \linkS4class{pedinbred} then the inbreeding coefficients are
+#' class pedinbred then the inbreeding coefficients are
 #' appended as the variable \code{F}
 #'
 #' @param x a pedigree object of class \linkS4class{pedigree}
