@@ -66,7 +66,7 @@ Here we create the matrix Aself from ```pedCycles``` using getAselfing which com
 
 ```R
 
-library(pedigreeR)
+library(pedigreeTools)
 
 Aself <- getASelfing(ID=pedCycles$label,Par1=pedCycles$sire,Par2=pedCycles$dam,nCycles=pedCycles$nCycles,nCyclesDefault=0)
 
@@ -84,9 +84,9 @@ diff <- Aself - A
 image(diff)
 
 ```
-<img src="https://github.com/siddharth51292/pedigreeR/blob/patch-2/inst/examples/diffMatrix.png" width="500">
+<img src="https://github.com/siddharth51292/pedigreeTools/blob/patch-2/inst/examples/diffMatrix.png" width="500">
 
-[Home](https://github.com/Rpedigree/pedigreeR)
+[Home](https://github.com/Rpedigree/pedigreeTools)
  
 
  
