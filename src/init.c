@@ -6,7 +6,7 @@ static R_CallMethodDef CallEntries[] = {
     {NULL, NULL, 0}
 };
 
-/** Initializer for the pedigreemm package.
+/** Initializer for the pedigreeTools package.
  *
  *  Register routines that can be called directly from R.
  */
