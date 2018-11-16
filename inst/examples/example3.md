@@ -25,7 +25,7 @@ It can be readily seen from the following pictoral representation of the pedigre
 
 ```R
 # Applying prunePed to subset the scrambled pedigree 
-library(pedigreeR)
+library(pedigreeTools)
 pedSelect <- prunePed(pedScram,selectVector=c(12,9,11),ngen=2) 
 
 pedSelect
@@ -64,5 +64,5 @@ pedFinal <- with(pedEdited, pedigree(label=label,sire=sire,dam=dam))
 12    1    9
 ```
 
-[Home](https://github.com/Rpedigree/pedigreeR)
+[Home](https://github.com/Rpedigree/pedigreeTools)
  
