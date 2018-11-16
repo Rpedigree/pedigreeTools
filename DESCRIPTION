@@ -14,5 +14,5 @@ Imports:
 LazyLoad: yes
 LazyData: yes
 License: MIT + file LICENSE
-URL: https://github.com/Rpedigree/pedigreeR/
+URL: https://github.com/Rpedigree/pedigreeTools/
 RoxygenNote: 6.1.1
