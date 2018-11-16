@@ -47,7 +47,7 @@ Below is some more example code that :
 * Uses the function ```pedigree``` to convert the data frame representation into an S4 object of formal class 'Pedigree'. 
 
 ```R    
-        library(pedigreeR)
+        library(pedigreeTools)
         
         ## Complete and sort incomplete Pedigree using editPed
         PedEdit<- editPed(sire=PedScram$sire, dam= PedScram$dam, label=PedScram$label) 
@@ -56,7 +56,7 @@ Below is some more example code that :
         PedFinal<- with(PedEdit, pedigree(label=label, sire=sire, dam=dam))
 
 ```
-The object PedFinal is a valid pedigree object that can be used for further analysis with PedigreeR and pedigreemm. This is what it should look like for this example : 
+The object PedFinal is a valid pedigree object that can be used for further analysis with PedigreeTools and pedigreemm. This is what it should look like for this example : 
 
 ```R
 PedFinal
@@ -86,5 +86,5 @@ Formal class 'pedigree' [package "pedigreeR"] with 3 slots
 
 ```
 
-[Home](https://github.com/Rpedigree/pedigreeR)
+[Home](https://github.com/Rpedigree/pedigreeTools)
  
