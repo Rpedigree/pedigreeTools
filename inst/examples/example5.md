@@ -22,7 +22,7 @@ wheat$sdGY <- wheat$GY/sd(wheat$GY)
 Creating the final pedigree objects 
 
 ```R
-library(pedigreeR)
+library(pedigreeTools)
 wheat_ped_edit <- editPed(sire=wheat_ped$gpid1,dam=wheat_ped$gpid2,label=wheat_ped$progenie)
 wheat_ped_final <- with(wheat_ped_edit,pedigree(label=label,sire=sire,dam=dam))
 ```
@@ -84,5 +84,5 @@ result <- cor(predict_sorted,wheat$sdGY)
 > result
 [1] 0.6999063 
 ```
-[Home](https://github.com/Rpedigree/pedigreeR)
+[Home](https://github.com/Rpedigree/pedigreeTools)
  
