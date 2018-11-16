@@ -2,7 +2,7 @@
 
 Following the last example, we create a valid pediree object from a ```data.frame``` representation of the example pedigree:
 ```R
-library(pedigreeR)
+library(pedigreeTools)
 
 pedFrame <-data.frame(sire=as.character(c(NA,NA,NA,NA,NA,1,3,5,6,4,8,1,10,8)),
 dam= as.character(c(NA,NA,NA,NA,NA,2,2,NA,7,7,NA,9,9,13)),
@@ -32,5 +32,5 @@ Below we show a visualization for the Ainv matrix for the example pedigree:
 
 <img src="https://github.com/siddharth51292/pedigreeR/blob/patch-2/inst/examples/Ainv.png" width="500">
 
-[Home](https://github.com/Rpedigree/pedigreeR)
+[Home](https://github.com/Rpedigree/pedigreeTools)
  
