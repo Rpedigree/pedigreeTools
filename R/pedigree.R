@@ -78,7 +78,7 @@ setMethod("head", "pedigree", function(x, ...)
 setMethod("tail", "pedigree", function(x, ...)
 	  do.call("tail", list(x = ped2DF(x), ...)))
 
-#' @useDynLib pedigreeR pedigree_chol
+#' @useDynLib pedigreeTools pedigree_chol
 setMethod("chol", "pedigree",
           function(x, pivot, LINPACK) {
               ttrans <- Matrix::solve(Matrix::t(as(x, "dtCMatrix")))
@@ -97,7 +97,7 @@ setMethod("chol", "pedigree",
 #' @param ped an object that inherits from class \linkS4class{pedigree}
 #' @return the inbreeding coefficients as a numeric vector
 #' @export
-#' @useDynLib pedigreeR pedigree_inbreeding
+#' @useDynLib pedigreeTools pedigree_inbreeding
 #' @examples
 #' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
 #' inbreeding(ped)
