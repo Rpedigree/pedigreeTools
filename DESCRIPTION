@@ -7,8 +7,8 @@ Maintainer: Ana Ines Vazquez <avazquez@msu.edu>
 Description: Tools to sort pedigrees and to extract the inbreeding coefficients
     and the relationship matrix. The use of pedigree data is central to genetics
     research within the animal and plant breeding comunities to predict 
-    breeding values (e.g. Henderson, 1976) <doi:10.2307/2529339>. The relationship
-    matrix between the individuals can be derived from pedigree structure following
+    breeding values (e.g. Harville and Callanan, 1989) <doi:10.1007/978-3-642-74487-7>. 
+    The relationship matrix between the individuals can be derived from pedigree structure following
     the algorithms described for example in Mrode (2004) <doi:10.1079/9780851990002.0000>.
     The core of the computational algorithms is implemented in C and the relationship matrix
     is stored as a sparse matrix using using the Matrix package.
