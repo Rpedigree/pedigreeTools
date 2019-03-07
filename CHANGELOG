@@ -1,0 +1,22 @@
+version 0.1 (2018-11-14)
+Initial version of the software
+
+version 0.2 (2019-03-06)
+Bug fixes, 
+The rchk tool (https://github.com/kalibera/rchk) detected 
+a memory protection bug in the file pedigree.c (line 46) that 
+was fixed in this version. Only three lines of code were modified:
+
+before:
+
+setAttrib(ans, install("F"), allocVector(REALSXP, n));
+
+now has ben replaced with:
+
+SEXP tmp2 = PROTECT(allocVector(REALSXP, n));
+setAttrib(ans, install("F"), tmp2);
+
+and a call to the UNPROTECT() macro was added at the end of the function:
+
+UNPROTECT(1);
+return ans;

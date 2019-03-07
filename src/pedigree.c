@@ -43,7 +43,9 @@ SEXP pedigree_chol(SEXP x, SEXP ans)
 	*sire = INTEGER(Sire), j, n = LENGTH(Sire);
     double *ax = REAL(GET_SLOT(ans, install("x"))), *F, Di, tmp;
 
-    setAttrib(ans, install("F"), allocVector(REALSXP, n));
+    SEXP tmp2 = PROTECT(allocVector(REALSXP, n));
+    setAttrib(ans, install("F"), tmp2);
+
     F = REAL(getAttrib(ans, install("F")));
     for (int i = 0; i < n; i++) {
 	int p = sire[i] - 1, q = dam[i] - 1;
@@ -73,6 +75,7 @@ SEXP pedigree_chol(SEXP x, SEXP ans)
 	}
 	for (int j = ap[i]; j < ap[i + 1]; j++) ax[j] *= Di;
     }
+    UNPROTECT(1);
     return ans;
 }
 

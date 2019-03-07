@@ -1,6 +1,6 @@
 Package: pedigreeTools
-Version: 0.1
-Date: 2018-11-14
+Version: 0.2
+Date: 2019-03-06
 Title: Versatile Functions for Working with Pedigrees
 Author: Ana Ines Vazquez, Douglas Bates, Siddharth Avadhanam, Paulino Perez
 Maintainer: Ana Ines Vazquez <avazquez@msu.edu>
