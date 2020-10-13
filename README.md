@@ -10,8 +10,8 @@ pedigreeTools evolved to an stand-alone package. We have added new
 features for pedigree edition, analysis of data from self-pollination 
 and for subsetting pedigrees.
 
-Developers: Ana I. Vazquez & Douglas M. Bates.
-Paulino Perez-Rodriguez & S. Avadhanam.
+Developers: Ana I. Vazquez, Douglas M. Bates.
+Paulino Perez-Rodriguez, G. de los Campos & S. Avadhanam.
 
 ### Installing pedigreeTools from GitHub
 
