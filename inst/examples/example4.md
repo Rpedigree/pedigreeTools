@@ -42,7 +42,7 @@ pedCycles <-data.frame(sire=as.character(c(NA,NA,NA,NA,NA,1,3,5,6,4,8,1,10,8)),
                       label=as.character(1:14),nCycles=c(0,0,0,0,0,0,0,5,0,0,0,0,3,0))
 ```
 
-| Subject  |      Sire     |  Dam | nCycles |
+| Subject  |      Sire (Parent 1)    |  Dam (Parent 2) | nCycles |
 |----------:|-------------:|------:|-------:|
 | 1	| NA| 	NA | 0|
 | 2	| NA| 	NA | 0|
