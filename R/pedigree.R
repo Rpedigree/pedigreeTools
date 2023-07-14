@@ -128,7 +128,11 @@ inbreeding <- function(ped) {
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-#' Dmat(ped)
+#' (D <- Dmat(ped))
+#'
+#' # Test for correctness
+#' DExp <- c(1.00, 1.00, 0.50, 0.75, 0.50, 0.46875)
+#' stopifnot(!any(abs(D - DExp) > .Machine$double.eps))
 Dmat <- function(ped) {
     F <- inbreeding(ped)
     sire <- ped@sire
@@ -224,6 +228,16 @@ getRelFactorInv <- function(ped) {
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
 #' getAInv(ped)
+#'
+#' # Test for correctness
+#' AInvExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
+#'                            0.0000, 1.0000, 0.5000, 0.0000, 0.2500, 0.6250,
+#'                            0.5000, 0.5000, 1.0000, 0.2500, 0.6250, 0.5625,
+#'                            0.5000, 0.0000, 0.2500, 1.0000, 0.6250, 0.3125,
+#'                            0.5000, 0.2500, 0.6250, 0.6250, 1.1250, 0.6875,
+#'                            0.2500, 0.6250, 0.5625, 0.3125, 0.6875, 1.1250),
+#'                   byrow = TRUE, nrow = 6)
+#' stopifnot(!any(abs(AInv - AInvExp) > .Machine$double.eps))
 getAInv <- function(ped)
 {
     stopifnot(is(ped, "pedigree"))
