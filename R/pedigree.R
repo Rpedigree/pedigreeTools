@@ -183,7 +183,7 @@ relfactor <- function(ped, labs)
     relf
 }
 
-TODO: Add a test for L matrix
+# TODO: Add a test for L matrix
 
 #' @title Inverse relationship factor from a pedigree
 #'
@@ -206,10 +206,10 @@ getRelFactorInv <- function(ped) {
     dimnames(L_Inv) <- list(ped@label, ped@label)
     L_Inv
 }
-return(Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
-         Matrix::solve(Matrix::t(as(ped, "sparseMatrix"))))
+# return(Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
+# Matrix::solve(Matrix::t(as(ped, "sparseMatrix"))))
 
-TODO: Add a test for L_Inv matrix
+# TODO: Add a test for L_Inv matrix
 
 #' @title Inverse of the Additive Relationship Matrix
 #'
@@ -232,8 +232,8 @@ getAInv <- function(ped)
     A_Inv
 }
 
-TODO: Add a test for AInv matrix
-https://github.com/Rpedigree/pedigreeTools/issues/3
+# TODO: Add a test for AInv matrix
+# https://github.com/Rpedigree/pedigreeTools/issues/3
 
 #' @title Additive Relationship Matrix
 #'
@@ -246,7 +246,17 @@ https://github.com/Rpedigree/pedigreeTools/issues/3
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-#' getA(ped)
+#' (A <- getA(ped))
+#'
+#' # Test for correctness
+#' AExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
+#'                         0.0000, 1.0000, 0.5000, 0.0000, 0.2500, 0.6250,
+#'                         0.5000, 0.5000, 1.0000, 0.2500, 0.6250, 0.5625,
+#'                         0.5000, 0.0000, 0.2500, 1.0000, 0.6250, 0.3125,
+#'                         0.5000, 0.2500, 0.6250, 0.6250, 1.1250, 0.6875,
+#'                         0.2500, 0.6250, 0.5625, 0.3125, 0.6875, 1.1250),
+#'                byrow = TRUE, nrow = 6)
+#' stopifnot(!any(abs(A - AExp) > .Machine$double.eps))
 getA <- function(ped) {
     stopifnot(is(ped, "pedigree"))
     aMx <- Matrix::crossprod(relfactor(ped))
@@ -254,7 +264,7 @@ getA <- function(ped) {
     aMx
 }
 
-TODO: Add a test for A matrix
+# TODO: Add a test for A matrix
 
 #' @title Counts number of generations of ancestors for one subject. Use recursion.
 #'
