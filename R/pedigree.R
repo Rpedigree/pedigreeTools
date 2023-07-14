@@ -1,20 +1,23 @@
 #### "pedigree" class methods
 
-#' Constructor for pedigree objects
+#' @title Constructor for pedigree objects
 #'
-#' A simple constructor for a pedigree object.  The main point for the
-#' constructor is to use coercions to make the calls easier.
+#' @description A simple constructor for a pedigree object. The main point for
+#'   the constructor is to use coercions to make the calls easier.
 #'
 #' @param sire integer vector or factor representation of the sires
 #' @param dam integer vector or factor representation of the dams
-#' @param label character vector of labels
+#' @param label character vector of individual labels
 #' @return an pedigree object of class \linkS4class{pedigree}
 #' @note \code{sire}, \code{dam} and \code{label} must all have the
 #'   same length and all labels in \code{sire} and \code{dam} must occur
 #'   in \code{label}
 #' @export
 #' @examples
-#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
+#' ped
 pedigree <- function(sire, dam, label) {
     n <- length(sire)
     labelex <- c(label, NA, 0)
@@ -49,15 +52,20 @@ setAs("pedigree", "data.frame",
       data.frame(sire = from@sire, dam = from@dam,
 		 row.names = from@label))
 
-#' Convert a pedigree to a data frame
+#' @title Convert a pedigree to a data frame
 #'
-#' Express a pedigree as a data frame with \code{sire} and
-#' \code{dam} stored as factors.  If the pedigree is an object of
-#' class pedinbred then the inbreeding coefficients are
-#' appended as the variable \code{F}
+#' @description Express a pedigree as a data frame with \code{sire} and
+#'   \code{dam} stored as factors. If the pedigree is an object of
+#'   class \code{\link{pedinbred}} then the inbreeding coefficients are
+#'   appended as the variable \code{F}
 #'
-#' @param x a pedigree object of class \linkS4class{pedigree}
+#' @param x \code{\link{pedigree}}
 #' @return a data frame
+#' @examples
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
+#' ped2DF(ped)
 ped2DF <- function(x) {
     stopifnot(is(x, "pedigree"))
     lab <- x@label
@@ -87,63 +95,68 @@ setMethod("chol", "pedigree",
                        "dtCMatrix"))
           })
 
-#' Inbreeding coefficients from a pedigree
+#' @title Inbreeding coefficients from a pedigree
 #'
-#' Create the inbreeding coefficients according to the algorithm given
-#' in "Comparison of four direct algorithms for computing inbreeding
-#' coefficients" by Mehdi Sargolzaei and Hiroaki Iwaisaki, Animal
-#' Science Journal (2005) 76, 401--406.
+#' @description Create the inbreeding coefficients according to the algorithm
+#'   given in "Comparison of four direct algorithms for computing inbreeding
+#'   coefficients" by Mehdi Sargolzaei and Hiroaki Iwaisaki, Animal Science
+#'   Journal (2005) 76, 401--406.
 #'
-#' @param ped an object that inherits from class \linkS4class{pedigree}
+#' @param ped \code{\link{pedigree}}
 #' @return the inbreeding coefficients as a numeric vector
 #' @export
 #' @useDynLib pedigreeTools pedigree_inbreeding
 #' @examples
-#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
 #' inbreeding(ped)
 inbreeding <- function(ped) {
     stopifnot(is(ped, "pedigree"))
     .Call(pedigree_inbreeding, ped)
 }
 
-#' Diagonal of D in the A = TDT' factorization.
+#' @title Diagonal of D in the A = TDT' factorization.
 #'
-#' Determine the diagonal factor in the decomposition of the
-#' relationship matrix A as TDT' where T is unit lower triangular.
+#' @description Determine the diagonal factor in the decomposition of the
+#'   relationship matrix A as TDT' where T is unit lower triangular.
 #'
-#' @param ped an object that inherits from class \linkS4class{pedigree}
+#' @param ped \code{\link{pedigree}}
 #' @return a numeric vector
 #' @export
 #' @examples
-#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
 #' Dmat(ped)
-Dmat <- function(ped)
-{
+Dmat <- function(ped) {
     F <- inbreeding(ped)
     sire <- ped@sire
     dam <- ped@dam
     Fsire <- ifelse(is.na(sire), -1, F[sire])
-    Fdam <-  ifelse(is.na(dam), -1, F[dam])
+    Fdam <- ifelse(is.na(dam), -1, F[dam])
     ans <- 1 - 0.25 * (2 + Fsire + Fdam)
     names(ans) <- ped@label
     ans
 }
 
-#' Relationship factor from a pedigree
+#' @title Relationship factor from a pedigree
 #'
-#' Determine the right Cholesky factor of the relationship matrix for
-#' the pedigree \code{ped}, possibly restricted to the specific labels
-#' that occur in \code{labs}.
+#' @description Determine the right Cholesky factor of the relationship matrix
+#'   for the pedigree \code{ped}, possibly restricted to the specific labels
+#'   that occur in \code{labs}.
 #'
-#' @param ped a pedigree that includes the individuals who occur in svec
-#' @param labs a character vector or a factor giving the labels to
+#' @param ped \code{\link{pedigree}}
+#' @param labs a character vector or a factor giving individual labels to
 #'   which to restrict the relationship matrix. If \code{labs} is a
 #'   factor then the levels of the factor are used as the labels.
-#'   Default is the complete set of labels in the pedigree.
-#' @return an object that inherits from \linkS4class{CHMfactor}
+#'   Default is the complete set of individuals in the pedigree.
+#' @return matrix (\linkS4class{dtCMatrix} - upper triangular sparse)
 #' @export
 #' @examples
-#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
 #' relfactor(ped)
 relfactor <- function(ped, labs)
 {
@@ -155,64 +168,95 @@ relfactor <- function(ped, labs)
     stopifnot(all(labs %in% ped@label))
     rect <- Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
         Matrix::solve(Matrix::t(as(ped, "sparseMatrix")), # rectangular factor
-              as(factor(ped@label, levels = ped@label),"sparseMatrix"))
-    tmpA<-Matrix::crossprod(rect)
-    tmp<- ped@label %in% labs
-    tmpA<-tmpA[tmp,tmp]
+              as(factor(ped@label, levels = ped@label), "sparseMatrix"))
+    tmpA <- Matrix::crossprod(rect)
+    tmp <- ped@label %in% labs
+    tmpA <- tmpA[tmp, tmp]
 
-    orlab <- order(as.numeric(factor(labped<-ped@label[tmp], levels=labs, ordered=T)))
-    labped<- as.character(labped[orlab])
-    tmpA  <- tmpA[orlab, orlab]
+    labped <- ped@label[tmp]
+    orlab <- order(as.numeric(factor(labped, levels=labs, ordered = TRUE)))
+    labped <- as.character(labped[orlab])
+    tmpA <- tmpA[orlab, orlab]
     stopifnot(all.equal(as.character(labped), as.character(labs)))
-    relf<-Matrix::chol(tmpA)
-    dimnames(relf)[[1]]<- dimnames(relf)[[2]]<-labs
+    relf <- Matrix::chol(tmpA)
+    dimnames(relf) <- list(labs, labs)
     relf
 }
 
-#' Inverse of the Relationship Matrix
+TODO: Add a test for L matrix
+
+#' @title Inverse relationship factor from a pedigree
 #'
-#' @param ped a pedigree that includes the individuals who occur in svec
-#'   which to restrict the relationship matrix. If \code{labs} is a
-#'   factor then the levels of the factor are used as the labels.
-#'   Default is the complete set of labels in the pedigree.
-#' @return an object that inherits from \linkS4class{CHMfactor}
+#' @description Get inverse of the right Cholesky factor of the relationship
+#'   matrix for the pedigree \code{ped}.
+#'
+#' @param ped \code{\link{pedigree}}
+#' @return matrix (\linkS4class{dtCMatrix} - triangular sparse)
 #' @export
 #' @examples
-#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
+#' getRelFactorInv(ped)
+getRelFactorInv <- function(ped) {
+    stopifnot(is(ped, "pedigree"))
+    T_Inv <- as(ped, "sparseMatrix") # dtCMatrix (lower triangular sparse)
+    DSq_Inv <- Matrix::Diagonal(x = 1 / sqrt(Dmat(ped))) # ddiMatrix (diagonal sparse)
+    L_Inv <- T_Inv %*% DSq_Inv # dtCMatrix (triangular sparse)
+    dimnames(L_Inv) <- list(ped@label, ped@label)
+    L_Inv
+}
+return(Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
+         Matrix::solve(Matrix::t(as(ped, "sparseMatrix"))))
+
+TODO: Add a test for L_Inv matrix
+
+#' @title Inverse of the Additive Relationship Matrix
+#'
+#' @description Returns the inverse of additive relationship matrix for the
+#'   pedigree.
+#'
+#' @param ped \code{\link{pedigree}}
+#' @return matrix (\linkS4class{dsCMatrix} - symmetric sparse)
+#' @export
+#' @examples
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
 #' getAInv(ped)
 getAInv <- function(ped)
 {
     stopifnot(is(ped, "pedigree"))
-    T_Inv <- as(ped, "sparseMatrix")
-    D_Inv <- Matrix::diag(1/Dmat(ped))
-    aiMx<-Matrix::t(T_Inv) %*% D_Inv %*% T_Inv
-    dimnames(aiMx)[[1]]<-dimnames(aiMx)[[2]] <-ped@label
-    aiMx
+    A_Inv <- Matrix::crossprod(getRelFactorInv(ped)) # dsCMatrix (symmetric sparse)
+    dimnames(A_Inv) <- list(ped@label, ped@label)
+    A_Inv
 }
 
-#' Additive Relationship Matrix
+TODO: Add a test for AInv matrix
+https://github.com/Rpedigree/pedigreeTools/issues/3
+
+#' @title Additive Relationship Matrix
 #'
-#' Returns the additive relationship matrix for the pedigree \code{ped}.
+#' @description Returns the additive relationship matrix for the pedigree.
 #'
-#' @param ped a pedigree that includes the individuals who occur in svec
-#'   which to restrict the relationship matrix. If \code{labs} is a
-#'   factor then the levels of the factor are used as the labels.
-#'   Default is the complete set of labels in the pedigree.
-#' @return an object that inherits from \linkS4class{CHMfactor}
-#' @keywords array
+#' @param ped \code{\link{pedigree}}
+#' @return matrix (\linkS4class{dsCMatrix} - symmetric sparse)
 #' @export
 #' @examples
-#' ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
 #' getA(ped)
-getA <- function(ped)
-{
+getA <- function(ped) {
     stopifnot(is(ped, "pedigree"))
-    aMx<-Matrix::crossprod(relfactor(ped))
-    dimnames(aMx)[[1]]<-dimnames(aMx)[[2]] <-ped@label
+    aMx <- Matrix::crossprod(relfactor(ped))
+    dimnames(aMx) <- list(ped@label, ped@label)
     aMx
 }
 
-#' Counts number of generations of ancestors for one subject. Use recursion.
+TODO: Add a test for A matrix
+
+#' @title Counts number of generations of ancestors for one subject. Use recursion.
 #'
 #' @param pede data frame with a pedigree and a column for the number of
 #'   generations of each subject.
@@ -220,6 +264,11 @@ getA <- function(ped)
 #' @param ngen number of generation
 #' @return a data frame object with the pedigree and generation of
 #'   ancestors for subject id.
+#' @examples
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
+#' getGenAncestors(ped)
 getGenAncestors <- function(pede, id, ngen=NULL){
     j <- which(pede$id==id)
     parents <- c(pede$sire[j], pede$dam[j])
@@ -258,10 +307,10 @@ getGenAncestors <- function(pede, id, ngen=NULL){
     pede
 }
 
-#' Edits a disordered or incomplete pedigree.
+#' @title Edits a disordered or incomplete pedigree
 #'
 #' 1_ add labels for the sires and dams not listed as labels before.
-#' 2_ order pedigree based on recursive calls to getGenAncestors.
+#' 2_ order pedigree based on recursive calls to \code{\link{getGenAncestors}}.
 #'
 #' @param sire integer vector or factor representation of the sires
 #' @param dam integer vector or factor representation of the dams
@@ -310,39 +359,40 @@ editPed <- function(sire, dam, label, verbose = FALSE)
     ans[ord,]
 }
 
-#' Subsets a pedigree for a specified vector of individuals upto a 
-#' specified number of previous generations using Recursion.
-  
+#' @title Subsets a pedigree for a specified vector of individuals up to a
+#' specified number of previous generations using recursion.
+
 #' @param ped Data Frame pedigree to be subset
 #' @param selectVector Vector of individuals to select from pedigree
-#' @param ngen Number of previous generations of parents to select starting from selectVector. 
-  
-#' @return Returns Subsetted pedigree as a DataFrame. 
+#' @param ngen Number of previous generations of parents to select starting from selectVector.
+
+#' @return Returns Subsetted pedigree as a DataFrame.
 #' @export
-
-
+#' @examples
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
 prunePed <- function(ped,selectVector,ngen=2){
-  
+
   ped <- as.matrix(ped)
 
   returnPed <- matrix(c(NA,NA,NA),nrow=1,ncol=3)
-                          
-  findBase <- ped[,"label"] %in% selectVector 
+
+  findBase <- ped[,"label"] %in% selectVector
   basePed <- ped[findBase,]
   findSire <- ped[,"label"] %in% basePed[,"sire"]
   findDam <- ped[,"label"] %in% basePed[,"dam"]
-  
+
   newSelVec <- ped[findSire|findDam,"label"]
   newSelVec <- newSelVec[!(newSelVec %in% selectVector)]
-  
-  if(ngen!=-1){
-  returnPed <- basePed
-  returnPed <- unique(rbind(returnPed,prunePed(ped,newSelVec,ngen-1)))
-  returnPed <- returnPed[rowSums(is.na(returnPed))!=3,]
-  }else{return(returnPed)}
 
-return(as.data.frame(returnPed))
+  if (ngen != -1) {
+    returnPed <- basePed
+    returnPed <- unique(rbind(returnPed,prunePed(ped,newSelVec,ngen-1)))
+    returnPed <- returnPed[rowSums(is.na(returnPed))!=3,]
+  } else {
+    return(returnPed)
+  }
 
+  return(as.data.frame(returnPed))
 }
-
-
