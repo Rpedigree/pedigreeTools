@@ -161,7 +161,17 @@ Dmat <- function(ped) {
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-#' relfactor(ped)
+#' (L <- relfactor(ped))
+#'
+#' # Test for correctness
+#' LExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
+#'                         0.0000, 1.0000, 0.5000, 0.0000, 0.2500, 0.6250,
+#'                         0.0000, 0.0000, 0.7071, 0.0000, 0.3536, 0.1768,
+#'                         0.0000, 0.0000, 0.0000, 0.8660, 0.4330, 0.2165,
+#'                         0.0000, 0.0000, 0.0000, 0.0000, 0.7071, 0.3536,
+#'                         0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.6847),
+#'                byrow = TRUE, nrow = 6)
+#' stopifnot(!any(abs(round(L, digits = 4) - LExp) > .Machine$double.eps))
 relfactor <- function(ped, labs)
 {
     stopifnot(is(ped, "pedigree"))
