@@ -144,9 +144,9 @@ Dmat <- function(ped) {
     ans
 }
 
-#' @title Gene flow from a pedigree
+#' @title Inverse gene flow from a pedigree
 #'
-#' @description Get gene flow matrix from a pedigree.
+#' @description Get inverse gene flow matrix from a pedigree.
 #'
 #' @param ped \code{\link{pedigree}}
 #' @return matrix (\linkS4class{dtCMatrix} - lower unitriangular sparse)
@@ -167,10 +167,35 @@ Dmat <- function(ped) {
 #'                   byrow = TRUE, nrow = 6)
 #' stopifnot(!any(abs(TInv  - TInvExp) > .Machine$double.eps))
 #' stopifnot(is(TInv, "sparseMatrix"))
-getTInv <- function(ped)
-{
+getTInv <- function(ped) {
     stopifnot(is(ped, "pedigree"))
     as(ped, "sparseMatrix")
+}
+
+#' @title Gene flow from a pedigree
+#'
+#' @description Get gene flow matrix from a pedigree.
+#'
+#' @param ped \code{\link{pedigree}}
+#' @return matrix (\linkS4class{dtCMatrix} - lower unitriangular sparse)
+#' @export
+#' @examples
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
+#' (T <- getT(ped))
+#'
+#' # Test for correctness
+#' TExp <- matrix(data = c(1.00, 0.000, 0.00, 0.00, 0.0, 0,
+#'                         0.00, 1.000, 0.00, 0.00, 0.0, 0,
+#'                         0.50, 0.500, 1.00, 0.00, 0.0, 0,
+#'                         0.50, 0.000, 0.00, 1.00, 0.0, 0,
+#'                         0.50, 0.250, 0.50, 0.50, 1.0, 0,
+#'                         0.25, 0.625, 0.25, 0.25, 0.5, 1),
+#'                byrow = TRUE, nrow = 6)
+#' stopifnot(!any(abs(T  - TExp) > .Machine$double.eps))
+getT <- function(ped) {
+    solve(getTInv(ped))
 }
 
 #' @title Relationship factor from a pedigree
