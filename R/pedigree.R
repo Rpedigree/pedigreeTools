@@ -211,7 +211,9 @@ getTInv <- function(ped) {
 #'                byrow = TRUE, nrow = 6)
 #' stopifnot(!any(abs(T  - TExp) > .Machine$double.eps))
 getT <- function(ped) {
-    solve(getTInv(ped))
+    T <- solve(getTInv(ped))
+    dimnames(T) <- list(ped@label, ped@label)
+    T
 }
 
 #' @title Relationship factor from a pedigree
@@ -225,13 +227,18 @@ getT <- function(ped) {
 #'   which to restrict the relationship matrix. If \code{labs} is a
 #'   factor then the levels of the factor are used as the labels.
 #'   Default is the complete set of individuals in the pedigree.
+#'
+#' @details Note that the right Cholesky factor is returned, which is upper
+#'   triangular, that is in A = LL' (lower %*% upper) we get L' (upper triangular)
+#'   and not L (lower triangular) as the function name might suggest.
+#'
 #' @return matrix (\linkS4class{dtCMatrix} - upper triangular sparse)
 #' @export
 #' @examples
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-#' (L <- relfactor(ped))
+#' (L <- getL(ped))
 #'
 #' # Test for correctness
 #' LExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
@@ -244,8 +251,7 @@ getT <- function(ped) {
 #' stopifnot(!any(abs(round(L, digits = 4) - LExp) > .Machine$double.eps))
 #' LExp <- chol(getA(ped))
 #' stopifnot(!any(abs(L - LExp) > .Machine$double.eps))
-relfactor <- function(ped, labs)
-{
+relfactor <- function(ped, labs) {
     stopifnot(is(ped, "pedigree"))
     if (missing(labs))                  # square case
         return(Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
@@ -269,10 +275,20 @@ relfactor <- function(ped, labs)
     relf
 }
 
+#' @describeIn relfactor
+getL <- relfactor
+
 #' @title Inverse relationship factor from a pedigree
 #'
 #' @description Get inverse of the right Cholesky factor of the relationship
 #'   matrix for the pedigree \code{ped}.
+#'
+#' @details Note that the inverse of the right Cholesky factor is returned, which
+#'   is lower triangular, that is in A = LL' (lower %*% upper) and
+#'   inv(A) = inv(LL') = inv(L)' inv(L)
+#'
+#'   we get L' (upper triangular)
+#'   and not L (lower triangular) as the function name might suggest.
 #'
 #' @param ped \code{\link{pedigree}}
 #' @return matrix (\linkS4class{dtCMatrix} - triangular sparse)
@@ -281,33 +297,40 @@ relfactor <- function(ped, labs)
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-#' LInv <- getRelFactorInv(ped)
+#' (LInv <- getLInv(ped))
 #'
 #' # Test for correctness
-#' A <- getA(ped)
-#' L <- chol(A)
-#' LInvExp <- solve(L)
-#' LInvExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
-#'                            0.0000, 1.0000, 0.5000, 0.0000, 0.2500, 0.6250,
-#'                            0.5000, 0.5000, 1.0000, 0.2500, 0.6250, 0.5625,
-#'                            0.5000, 0.0000, 0.2500, 1.0000, 0.6250, 0.3125,
-#'                            0.5000, 0.2500, 0.6250, 0.6250, 1.1250, 0.6875,
-#'                            0.2500, 0.6250, 0.5625, 0.3125, 0.6875, 1.1250),
+#' LInvExp <- matrix(data = c( 1.0000,  0.0000,  0.0000,  0.0000,  0.0000, 0.0000,
+#'                             0.0000,  1.0000,  0.0000,  0.0000,  0.0000, 0.0000,
+#'                            -0.7071, -0.7071,  1.4142,  0.0000,  0.0000, 0.0000,
+#'                            -0.5774,  0.0000,  0.0000,  1.1547,  0.0000, 0.0000,
+#'                             0.0000,  0.0000, -0.7071, -0.7071,  1.4142, 0.0000,
+#'                             0.0000, -0.7303,  0.0000,  0.0000, -0.7303, 1.4606),
 #'                   byrow = TRUE, nrow = 6)
+#' stopifnot(!any(abs(round(LInv, digits = 4) - LInvExp) > .Machine$double.eps))
+#' L <- t(chol(getA(ped)))
+#' LInvExp <- solve(L)
 #' stopifnot(!any(abs(LInv - LInvExp) > .Machine$double.eps))
 #' stopifnot(is(LInv, "sparseMatrix"))
-getRelFactorInv <- function(ped) {
-    stopifnot(is(ped, "pedigree"))
-    T_Inv <- as(ped, "sparseMatrix") # dtCMatrix (lower triangular sparse)
-    DSq_Inv <- Matrix::Diagonal(x = 1 / sqrt(Dmat(ped))) # ddiMatrix (diagonal sparse)
-    L_Inv <- T_Inv %*% DSq_Inv # dtCMatrix (triangular sparse)
-    dimnames(L_Inv) <- list(ped@label, ped@label)
-    L_Inv
+relfactorInv <- function(ped) {
+    # A = LL' (lower %*% upper)
+    # inv(A) = inv(LL')
+    #        = inv(L') inv(L) (upper %*% lower)
+    #        = inv(L)' inv(L) (upper %*% lower)
+    # A = TDT' (lower %*% diag %*% upper)
+    # inv(A) = inv(TDT')
+    #        = inv(T') inv(D) inv(T) (upper %*% diag %*% lower)
+    #        = inv(T)' inv(D) inv(T) (upper %*% diag %*% lower)
+    # --> We must premultiply inv(T) with sqrt(inv(D))
+    TInv <- getTInv(ped) # dtCMatrix (lower triangular sparse)
+    DSqInv <- Matrix::Diagonal(x = sqrt(getDInv(ped))) # ddiMatrix (diagonal sparse)
+    LInv <- DSqInv %*% TInv  # dtCMatrix (lower triangular sparse)
+    dimnames(LInv) <- list(ped@label, ped@label)
+    LInv
 }
-# return(Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
-# Matrix::solve(Matrix::t(as(ped, "sparseMatrix"))))
 
-# TODO: Add a test for L_Inv matrix
+#' @describeIn relfactorInv
+getLInv <- relfactorInv
 
 #' @title Inverse of the Additive Relationship Matrix
 #'
@@ -335,8 +358,7 @@ getRelFactorInv <- function(ped) {
 #' AInvExp <- solve(getA(ped))
 #' stopifnot(!any(abs(AInv - AInvExp) > .Machine$double.eps))
 #' stopifnot(is(AInv, "sparseMatrix"))
-getAInv <- function(ped)
-{
+getAInv <- function(ped) {
     stopifnot(is(ped, "pedigree"))
     A_Inv <- Matrix::crossprod(getRelFactorInv(ped)) # dsCMatrix (symmetric sparse)
     dimnames(A_Inv) <- list(ped@label, ped@label)
@@ -369,7 +391,6 @@ getAInv <- function(ped)
 #'                byrow = TRUE, nrow = 6)
 #' stopifnot(!any(abs(A - AExp) > .Machine$double.eps))
 getA <- function(ped) {
-    stopifnot(is(ped, "pedigree"))
     aMx <- Matrix::crossprod(relfactor(ped))
     dimnames(aMx) <- list(ped@label, ped@label)
     aMx
@@ -445,8 +466,7 @@ getGenAncestors <- function(pede, id, ngen=NULL){
 #' pede <- pede[sample(replace=FALSE, 1:14),]
 #' pede <- editPed(sire=pede$sire, dam=pede$dam, label=pede$label)
 #' ped <- with(pede, pedigree(label=label, sire=sire, dam=dam))
-editPed <- function(sire, dam, label, verbose = FALSE)
-{
+editPed <- function(sire, dam, label, verbose = FALSE) {
     nped <- length(sire)
     if (nped != length(dam))  stop("sire and dam have to be of the same length")
     if (nped != length(label)) stop("label has to be of the same length than sire and dam")
@@ -491,7 +511,7 @@ editPed <- function(sire, dam, label, verbose = FALSE)
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-prunePed <- function(ped,selectVector,ngen=2){
+prunePed <- function(ped,selectVector,ngen=2) {
 
   ped <- as.matrix(ped)
 
