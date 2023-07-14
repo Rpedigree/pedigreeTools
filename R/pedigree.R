@@ -110,7 +110,11 @@ setMethod("chol", "pedigree",
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-#' inbreeding(ped)
+#' (F <- inbreeding(ped))
+#'
+#' # Test for correctness
+#' FExp <- c(0.000, 0.000, 0.000, 0.000, 0.125, 0.125)
+#' stopifnot(!any(abs(D - DExp) > .Machine$double.eps))
 inbreeding <- function(ped) {
     stopifnot(is(ped, "pedigree"))
     .Call(pedigree_inbreeding, ped)
