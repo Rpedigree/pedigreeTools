@@ -172,6 +172,8 @@ Dmat <- function(ped) {
 #'                         0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.6847),
 #'                byrow = TRUE, nrow = 6)
 #' stopifnot(!any(abs(round(L, digits = 4) - LExp) > .Machine$double.eps))
+#' LExp <- chol(getA(ped))
+#' stopifnot(!any(abs(L - LExp) > .Machine$double.eps))
 relfactor <- function(ped, labs)
 {
     stopifnot(is(ped, "pedigree"))
@@ -197,8 +199,6 @@ relfactor <- function(ped, labs)
     relf
 }
 
-# TODO: Add a test for L matrix
-
 #' @title Inverse relationship factor from a pedigree
 #'
 #' @description Get inverse of the right Cholesky factor of the relationship
@@ -211,7 +211,20 @@ relfactor <- function(ped, labs)
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-#' getRelFactorInv(ped)
+#' LInv <- getRelFactorInv(ped)
+#'
+#' # Test for correctness
+#' A <- getA(ped)
+#' L <- chol(A)
+#' LInvExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
+#'                            0.0000, 1.0000, 0.5000, 0.0000, 0.2500, 0.6250,
+#'                            0.5000, 0.5000, 1.0000, 0.2500, 0.6250, 0.5625,
+#'                            0.5000, 0.0000, 0.2500, 1.0000, 0.6250, 0.3125,
+#'                            0.5000, 0.2500, 0.6250, 0.6250, 1.1250, 0.6875,
+#'                            0.2500, 0.6250, 0.5625, 0.3125, 0.6875, 1.1250),
+#'                   byrow = TRUE, nrow = 6)
+#' stopifnot(!any(abs(AInv - AInvExp) > .Machine$double.eps))
+#' stopifnot(is(AInv, "sparseMatrix"))
 getRelFactorInv <- function(ped) {
     stopifnot(is(ped, "pedigree"))
     T_Inv <- as(ped, "sparseMatrix") # dtCMatrix (lower triangular sparse)
@@ -237,7 +250,7 @@ getRelFactorInv <- function(ped) {
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-#' getAInv(ped)
+#' (AInv <- getAInv(ped))
 #'
 #' # Test for correctness
 #' AInvExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
@@ -248,6 +261,7 @@ getRelFactorInv <- function(ped) {
 #'                            0.2500, 0.6250, 0.5625, 0.3125, 0.6875, 1.1250),
 #'                   byrow = TRUE, nrow = 6)
 #' stopifnot(!any(abs(AInv - AInvExp) > .Machine$double.eps))
+#' stopifnot(is(AInv, "sparseMatrix"))
 getAInv <- function(ped)
 {
     stopifnot(is(ped, "pedigree"))
@@ -287,8 +301,6 @@ getA <- function(ped) {
     dimnames(aMx) <- list(ped@label, ped@label)
     aMx
 }
-
-# TODO: Add a test for A matrix
 
 #' @title Counts number of generations of ancestors for one subject. Use recursion.
 #'
