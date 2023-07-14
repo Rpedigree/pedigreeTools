@@ -144,6 +144,35 @@ Dmat <- function(ped) {
     ans
 }
 
+#' @title Gene flow from a pedigree
+#'
+#' @description Get gene flow matrix from a pedigree.
+#'
+#' @param ped \code{\link{pedigree}}
+#' @return matrix (\linkS4class{dtCMatrix} - lower unitriangular sparse)
+#' @export
+#' @examples
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
+#' (TInv <- getTInv(ped))
+#'
+#' # Test for correctness
+#' TInvExp <- matrix(data = c( 1.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+#'                             0.0,  1.0,  0.0,  0.0,  0.0,  0.0,
+#'                            -0.5, -0.5,  1.0,  0.0,  0.0,  0.0,
+#'                            -0.5,  0.0,  0.0,  1.0,  0.0,  0.0,
+#'                             0.0,  0.0, -0.5, -0.5,  1.0,  0.0,
+#'                             0.0, -0.5,  0.0,  0.0, -0.5,  1.0),
+#'                   byrow = TRUE, nrow = 6)
+#' stopifnot(!any(abs(TInv  - TInvExp) > .Machine$double.eps))
+#' stopifnot(is(TInv, "sparseMatrix"))
+getTInv <- function(ped)
+{
+    stopifnot(is(ped, "pedigree"))
+    as(ped, "sparseMatrix")
+}
+
 #' @title Relationship factor from a pedigree
 #'
 #' @description Determine the right Cholesky factor of the relationship matrix
@@ -216,6 +245,7 @@ relfactor <- function(ped, labs)
 #' # Test for correctness
 #' A <- getA(ped)
 #' L <- chol(A)
+#' LInvExp <- solve(L)
 #' LInvExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
 #'                            0.0000, 1.0000, 0.5000, 0.0000, 0.2500, 0.6250,
 #'                            0.5000, 0.5000, 1.0000, 0.2500, 0.6250, 0.5625,
@@ -223,8 +253,8 @@ relfactor <- function(ped, labs)
 #'                            0.5000, 0.2500, 0.6250, 0.6250, 1.1250, 0.6875,
 #'                            0.2500, 0.6250, 0.5625, 0.3125, 0.6875, 1.1250),
 #'                   byrow = TRUE, nrow = 6)
-#' stopifnot(!any(abs(AInv - AInvExp) > .Machine$double.eps))
-#' stopifnot(is(AInv, "sparseMatrix"))
+#' stopifnot(!any(abs(LInv - LInvExp) > .Machine$double.eps))
+#' stopifnot(is(LInv, "sparseMatrix"))
 getRelFactorInv <- function(ped) {
     stopifnot(is(ped, "pedigree"))
     T_Inv <- as(ped, "sparseMatrix") # dtCMatrix (lower triangular sparse)
@@ -260,6 +290,8 @@ getRelFactorInv <- function(ped) {
 #'                            0.5000, 0.2500, 0.6250, 0.6250, 1.1250, 0.6875,
 #'                            0.2500, 0.6250, 0.5625, 0.3125, 0.6875, 1.1250),
 #'                   byrow = TRUE, nrow = 6)
+#' stopifnot(!any(abs(AInv - AInvExp) > .Machine$double.eps))
+#' AInvExp <- solve(getA(ped))
 #' stopifnot(!any(abs(AInv - AInvExp) > .Machine$double.eps))
 #' stopifnot(is(AInv, "sparseMatrix"))
 getAInv <- function(ped)
