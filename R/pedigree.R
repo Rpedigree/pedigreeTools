@@ -126,6 +126,7 @@ inbreeding <- function(ped) {
 #'   relationship matrix A as TDT' where T is unit lower triangular.
 #'
 #' @param ped \code{\link{pedigree}}
+#' @param vector logical, return a vector or sparse matrix
 #' @return a numeric vector
 #' @export
 #' @examples
@@ -141,14 +142,19 @@ inbreeding <- function(ped) {
 #'
 #' DInvExp <- 1 / DExp
 #' stopifnot(!any(abs(DInv - DInvExp) > .Machine$double.eps))
-Dmat <- function(ped) {
+Dmat <- function(ped, vector = TRUE) {
     F <- inbreeding(ped)
     sire <- ped@sire
     dam <- ped@dam
     Fsire <- ifelse(is.na(sire), -1, F[sire])
     Fdam <- ifelse(is.na(dam), -1, F[dam])
     ans <- 1 - 0.25 * (2 + Fsire + Fdam)
-    names(ans) <- ped@label
+    if (vector) {
+        names(ans) <- ped@label
+    } else {
+        ans <- Matrix::Diagonal(x = ans)
+        dimnames(ans) <- list(ped@label, ped@label)
+    }
     ans
 }
 
@@ -156,8 +162,13 @@ Dmat <- function(ped) {
 getD <- Dmat
 
 #' @describeIn Dmat
-getDInv <- function(ped) {
-    1 / getD(ped)
+getDInv <- function(ped, vector = TRUE) {
+    ans <- 1 / getD(ped)
+    if (!vector) {
+        ans <- Matrix::Diagonal(x = ans)
+        dimnames(ans) <- list(ped@label, ped@label)
+    }
+    ans
 }
 
 #' @title Inverse gene flow from a pedigree
@@ -211,7 +222,7 @@ getTInv <- function(ped) {
 #'                byrow = TRUE, nrow = 6)
 #' stopifnot(!any(abs(T  - TExp) > .Machine$double.eps))
 getT <- function(ped) {
-    T <- solve(getTInv(ped))
+    T <- Matrix::solve(getTInv(ped))
     dimnames(T) <- list(ped@label, ped@label)
     T
 }
@@ -229,8 +240,9 @@ getT <- function(ped) {
 #'   Default is the complete set of individuals in the pedigree.
 #'
 #' @details Note that the right Cholesky factor is returned, which is upper
-#'   triangular, that is in A = LL' (lower %*% upper) we get L' (upper triangular)
-#'   and not L (lower triangular) as the function name might suggest.
+#'   triangular, that is in A = LL' = R'R (lower %*% upper) we get R = L'
+#'   (upper triangular) and not L (lower triangular) as the function name might
+#'   suggest.
 #'
 #' @return matrix (\linkS4class{dtCMatrix} - upper triangular sparse)
 #' @export
@@ -239,6 +251,7 @@ getT <- function(ped) {
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
 #' (L <- getL(ped))
+#' chol(getA(ped))
 #'
 #' # Test for correctness
 #' LExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
@@ -253,23 +266,33 @@ getT <- function(ped) {
 #' stopifnot(!any(abs(L - LExp) > .Machine$double.eps))
 relfactor <- function(ped, labs) {
     stopifnot(is(ped, "pedigree"))
-    if (missing(labs))                  # square case
-        return(Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
-               Matrix::solve(Matrix::t(as(ped, "sparseMatrix"))))
+    if (missing(labs)) { # "square" case
+        # A = TDT' = TSST'
+        #   = LL' --> L' = ST'
+        return(sqrt(getD(ped, vector = FALSE)) %*% Matrix::t(getT(ped)))
+    }
     labs <- factor(labs) # drop unused levels from a factor
     stopifnot(all(labs %in% ped@label))
+    # A = TDT' = TSST'
+    #   = LL' --> L' = ST'
+    # TODO: Make this clearer to follow
+    # TODO: We make L' = R (right Cholesky factor) here
     rect <- Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
         Matrix::solve(Matrix::t(as(ped, "sparseMatrix")), # rectangular factor
               as(factor(ped@label, levels = ped@label), "sparseMatrix"))
+    # TODO: we make A = LL' = R'R here
     tmpA <- Matrix::crossprod(rect)
     tmp <- ped@label %in% labs
     tmpA <- tmpA[tmp, tmp]
 
+    # TODO: we sort here
     labped <- ped@label[tmp]
     orlab <- order(as.numeric(factor(labped, levels=labs, ordered = TRUE)))
     labped <- as.character(labped[orlab])
     tmpA <- tmpA[orlab, orlab]
     stopifnot(all.equal(as.character(labped), as.character(labs)))
+    # TODO: and get the right Cholesky factor L' = R
+    # TODO: why chol again if we had the right Cholesky factor L' = R above?
     relf <- Matrix::chol(tmpA)
     dimnames(relf) <- list(labs, labs)
     relf
@@ -347,26 +370,29 @@ getLInv <- relfactorInv
 #' (AInv <- getAInv(ped))
 #'
 #' # Test for correctness
-#' AInvExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
-#'                            0.0000, 1.0000, 0.5000, 0.0000, 0.2500, 0.6250,
-#'                            0.5000, 0.5000, 1.0000, 0.2500, 0.6250, 0.5625,
-#'                            0.5000, 0.0000, 0.2500, 1.0000, 0.6250, 0.3125,
-#'                            0.5000, 0.2500, 0.6250, 0.6250, 1.1250, 0.6875,
-#'                            0.2500, 0.6250, 0.5625, 0.3125, 0.6875, 1.1250),
+#' AInvExp <- matrix(data = c( 1.833,  0.500, -1.000, -0.667,  0.000,  0.000,
+#'                             0.500,  2.033, -1.000,  0.000,  0.533, -1.067,
+#'                            -1.000, -1.000,  2.500,  0.500, -1.000,  0.000,
+#'                            -0.667,  0.000,  0.500,  1.833, -1.000,  0.000,
+#'                             0.000,  0.533, -1.000, -1.000,  2.533, -1.067,
+#'                             0.000, -1.067,  0.000,  0.000, -1.067,  2.133),
 #'                   byrow = TRUE, nrow = 6)
-#' stopifnot(!any(abs(AInv - AInvExp) > .Machine$double.eps))
+#' stopifnot(!any(abs(round(AInv, digits = 3) - AInvExp) > .Machine$double.eps))
 #' AInvExp <- solve(getA(ped))
-#' stopifnot(!any(abs(AInv - AInvExp) > .Machine$double.eps))
+#' stopifnot(!any(abs(round(AInv, digits = 14) - round(AInvExp, digits = 14)) > .Machine$double.eps))
 #' stopifnot(is(AInv, "sparseMatrix"))
+#' stopifnot(Matrix::isSymmetric(AInv))
 getAInv <- function(ped) {
+    # A = LL' (lower %*% upper)
+    # inv(A) = inv(LL')
+    #        = inv(L') inv(L) (upper %*% lower)
+    #        = inv(L)' inv(L) (upper %*% lower)
+    # crossprod() does X'X --> inv(L)' inv(L)
     stopifnot(is(ped, "pedigree"))
-    A_Inv <- Matrix::crossprod(getRelFactorInv(ped)) # dsCMatrix (symmetric sparse)
-    dimnames(A_Inv) <- list(ped@label, ped@label)
-    A_Inv
+    AInv <- Matrix::crossprod(getLInv(ped)) # dsCMatrix (symmetric sparse)
+    dimnames(AInv) <- list(ped@label, ped@label)
+    AInv
 }
-
-# TODO: Add a test for AInv matrix
-# https://github.com/Rpedigree/pedigreeTools/issues/3
 
 #' @title Additive Relationship Matrix
 #'
@@ -390,8 +416,11 @@ getAInv <- function(ped) {
 #'                         0.2500, 0.6250, 0.5625, 0.3125, 0.6875, 1.1250),
 #'                byrow = TRUE, nrow = 6)
 #' stopifnot(!any(abs(A - AExp) > .Machine$double.eps))
+#' stopifnot(Matrix::isSymmetric(A))
 getA <- function(ped) {
-    aMx <- Matrix::crossprod(relfactor(ped))
+    # A = LL' = R'R
+    # crossprod() does X'X --> R'R
+    aMx <- Matrix::crossprod(getL(ped))
     dimnames(aMx) <- list(ped@label, ped@label)
     aMx
 }
