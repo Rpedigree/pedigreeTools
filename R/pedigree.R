@@ -128,11 +128,15 @@ inbreeding <- function(ped) {
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-#' (D <- Dmat(ped))
+#' (D <- getD(ped))
+#' (DInv <- getDInv(ped))
 #'
 #' # Test for correctness
 #' DExp <- c(1.00, 1.00, 0.50, 0.75, 0.50, 0.46875)
 #' stopifnot(!any(abs(D - DExp) > .Machine$double.eps))
+#'
+#' DInvExp <- 1 / DExp
+#' stopifnot(!any(abs(DInv - DInvExp) > .Machine$double.eps))
 Dmat <- function(ped) {
     F <- inbreeding(ped)
     sire <- ped@sire
@@ -142,6 +146,14 @@ Dmat <- function(ped) {
     ans <- 1 - 0.25 * (2 + Fsire + Fdam)
     names(ans) <- ped@label
     ans
+}
+
+#' @describeIn Dmat
+getD <- Dmat
+
+#' @describeIn Dmat
+getDInv <- function(ped) {
+    1 / getD(ped)
 }
 
 #' @title Inverse gene flow from a pedigree
