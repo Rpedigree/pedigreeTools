@@ -120,7 +120,7 @@ inbreeding <- function(ped) {
     .Call(pedigree_inbreeding, ped)
 }
 
-#' @title Diagonal of D in the A = TDT' factorization.
+#' @title Mendelian sampling variance
 #'
 #' @description Determine the diagonal factor in the decomposition of the
 #'   relationship matrix A as TDT' where T is unit lower triangular.
@@ -158,10 +158,10 @@ Dmat <- function(ped, vector = TRUE) {
     ans
 }
 
-#' @describeIn Dmat
+#' @describeIn Dmat Mendelian sampling variance
 getD <- Dmat
 
-#' @describeIn Dmat
+#' @describeIn Dmat  Mendelian sampling precision (= 1 / variance)
 getDInv <- function(ped, vector = TRUE) {
     ans <- 1 / getD(ped)
     if (!vector) {
@@ -247,7 +247,7 @@ getT <- function(ped) {
 #'   (upper triangular) and not L (lower triangular) as the function name might
 #'   suggest.
 #'
-#' @reference Colleau, J.-J. An indirect approach to the extensive calculation of
+#' @references Colleau, J.-J. An indirect approach to the extensive calculation of
 #'   relationship coefficients. Genet Sel Evol 34, 409 (2002).
 #'   https://doi.org/10.1186/1297-9686-34-4-409
 #'
@@ -292,7 +292,7 @@ relfactor <- function(ped, labs = NULL) {
     LSubset
 }
 
-#' @describeIn relfactor
+#' @describeIn relfactor Relationship factor from a pedigree
 getL <- relfactor
 
 #' @title Inverse relationship factor from a pedigree
@@ -345,7 +345,7 @@ relfactorInv <- function(ped) {
     LInv
 }
 
-#' @describeIn relfactorInv
+#' @describeIn relfactorInv Inverse relationship factor from a pedigree
 getLInv <- relfactorInv
 
 #' @title Inverse of the additive relationship matrix
@@ -438,7 +438,7 @@ getA <- function(ped, labs = NULL) {
 #'   of the factor are used as the labels. Default is the complete set of
 #'   individuals in the pedigree.
 #'
-#' @reference Colleau, J.-J. An indirect approach to the extensive calculation of
+#' @references Colleau, J.-J. An indirect approach to the extensive calculation of
 #'   relationship coefficients. Genet Sel Evol 34, 409 (2002).
 #'   https://doi.org/10.1186/1297-9686-34-4-409
 #'
@@ -531,8 +531,9 @@ getGenAncestors <- function(pede, id, ngen=NULL){
 
 #' @title Edits a disordered or incomplete pedigree
 #'
-#' 1_ add labels for the sires and dams not listed as labels before.
-#' 2_ order pedigree based on recursive calls to \code{\link{getGenAncestors}}.
+#' @description Edits a disordered or incomplete pedigree by:
+#'   1) adding labels for the sires and dams not listed as labels before and
+#'   2) ordering pedigree based on recursive calls to \code{\link{getGenAncestors}}.
 #'
 #' @param sire integer vector or factor representation of the sires
 #' @param dam integer vector or factor representation of the dams

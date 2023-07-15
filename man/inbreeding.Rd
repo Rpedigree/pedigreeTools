@@ -7,19 +7,24 @@
 inbreeding(ped)
 }
 \arguments{
-\item{ped}{an object that inherits from class \linkS4class{pedigree}}
+\item{ped}{\code{\link{pedigree}}}
 }
 \value{
 the inbreeding coefficients as a numeric vector
 }
 \description{
-Create the inbreeding coefficients according to the algorithm given
-in "Comparison of four direct algorithms for computing inbreeding
-coefficients" by Mehdi Sargolzaei and Hiroaki Iwaisaki, Animal
-Science Journal (2005) 76, 401--406.
+Create the inbreeding coefficients according to the algorithm
+  given in "Comparison of four direct algorithms for computing inbreeding
+  coefficients" by Mehdi Sargolzaei and Hiroaki Iwaisaki, Animal Science
+  Journal (2005) 76, 401--406.
 }
 \examples{
-ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
-inbreeding(ped)
-}
+ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+                dam =  c(NA, NA, 2, NA, 3, 2),
+                label = 1:6)
+(F <- inbreeding(ped))
 
+# Test for correctness
+FExp <- c(0.000, 0.000, 0.000, 0.000, 0.125, 0.125)
+stopifnot(!any(abs(D - DExp) > .Machine$double.eps))
+}

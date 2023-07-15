@@ -11,14 +11,14 @@ pedigree(sire, dam, label)
 
 \item{dam}{integer vector or factor representation of the dams}
 
-\item{label}{character vector of labels}
+\item{label}{character vector of individual labels}
 }
 \value{
 an pedigree object of class \linkS4class{pedigree}
 }
 \description{
-A simple constructor for a pedigree object.  The main point for the
-constructor is to use coercions to make the calls easier.
+A simple constructor for a pedigree object. The main point for
+  the constructor is to use coercions to make the calls easier.
 }
 \note{
 \code{sire}, \code{dam} and \code{label} must all have the
@@ -26,6 +26,8 @@ constructor is to use coercions to make the calls easier.
   in \code{label}
 }
 \examples{
-ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
+ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+                dam =  c(NA, NA, 2, NA, 3, 2),
+                label = 1:6)
+ped
 }
-

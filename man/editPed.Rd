@@ -2,7 +2,7 @@
 % Please edit documentation in R/pedigree.R
 \name{editPed}
 \alias{editPed}
-\title{Edits a disordered or incomplete pedigree.}
+\title{Edits a disordered or incomplete pedigree}
 \usage{
 editPed(sire, dam, label, verbose = FALSE)
 }
@@ -20,8 +20,9 @@ function is ordering. Default is FALSE.}
 a data frame with the pedigree ordered.
 }
 \description{
-1_ add labels for the sires and dams not listed as labels before.
-2_ order pedigree based on recursive calls to getGenAncestors.
+Edits a disordered or incomplete pedigree by:
+  1) adding labels for the sires and dams not listed as labels before and
+  2) ordering pedigree based on recursive calls to \code{\link{getGenAncestors}}.
 }
 \examples{
 pede <- data.frame(sire=as.character(c(NA,NA,NA,NA,NA,1,3,5,6,4,8,1,10,8)),
@@ -31,4 +32,3 @@ pede <- pede[sample(replace=FALSE, 1:14),]
 pede <- editPed(sire=pede$sire, dam=pede$dam, label=pede$label)
 ped <- with(pede, pedigree(label=label, sire=sire, dam=dam))
 }
-

@@ -2,24 +2,37 @@
 % Please edit documentation in R/pedigree.R
 \name{getAInv}
 \alias{getAInv}
-\title{Inverse of the Relationship Matrix}
+\title{Inverse of the additive relationship matrix}
 \usage{
 getAInv(ped)
 }
 \arguments{
-\item{ped}{a pedigree that includes the individuals who occur in svec
-which to restrict the relationship matrix. If \code{labs} is a
-factor then the levels of the factor are used as the labels.
-Default is the complete set of labels in the pedigree.}
+\item{ped}{\code{\link{pedigree}}}
 }
 \value{
-an object that inherits from \linkS4class{CHMfactor}
+matrix (\linkS4class{dsCMatrix} - symmetric sparse)
 }
 \description{
-Inverse of the Relationship Matrix
+Returns the inverse of additive relationship matrix for the
+  pedigree.
 }
 \examples{
-ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
-getAInv(ped)
-}
+ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+                dam =  c(NA, NA, 2, NA, 3, 2),
+                label = 1:6)
+(AInv <- getAInv(ped))
 
+# Test for correctness
+AInvExp <- matrix(data = c( 1.833,  0.500, -1.000, -0.667,  0.000,  0.000,
+                            0.500,  2.033, -1.000,  0.000,  0.533, -1.067,
+                           -1.000, -1.000,  2.500,  0.500, -1.000,  0.000,
+                           -0.667,  0.000,  0.500,  1.833, -1.000,  0.000,
+                            0.000,  0.533, -1.000, -1.000,  2.533, -1.067,
+                            0.000, -1.067,  0.000,  0.000, -1.067,  2.133),
+                  byrow = TRUE, nrow = 6)
+stopifnot(!any(abs(round(AInv, digits = 3) - AInvExp) > .Machine$double.eps))
+AInvExp <- solve(getA(ped))
+stopifnot(!any(abs(round(AInv, digits = 14) - round(AInvExp, digits = 14)) > .Machine$double.eps))
+stopifnot(is(AInv, "sparseMatrix"))
+stopifnot(Matrix::isSymmetric(AInv))
+}

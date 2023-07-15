@@ -2,8 +2,8 @@
 % Please edit documentation in R/pedigree.R
 \name{prunePed}
 \alias{prunePed}
-\title{Subsets a pedigree for a specified vector of individuals upto a 
-specified number of previous generations using Recursion.}
+\title{Subsets a pedigree for a specified vector of individuals up to a
+specified number of previous generations using recursion.}
 \usage{
 prunePed(ped, selectVector, ngen = 2)
 }
@@ -18,7 +18,11 @@ prunePed(ped, selectVector, ngen = 2)
 Returns Subsetted pedigree as a DataFrame.
 }
 \description{
-Subsets a pedigree for a specified vector of individuals upto a 
-specified number of previous generations using Recursion.
+Subsets a pedigree for a specified vector of individuals up to a
+specified number of previous generations using recursion.
 }
-
+\examples{
+ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+                dam =  c(NA, NA, 2, NA, 3, 2),
+                label = 1:6)
+}
