@@ -196,7 +196,9 @@ getDInv <- function(ped, vector = TRUE) {
 #' stopifnot(is(TInv, "sparseMatrix"))
 getTInv <- function(ped) {
     stopifnot(is(ped, "pedigree"))
-    as(ped, "sparseMatrix")
+    TInv <- as(ped, "sparseMatrix")
+    dimnames(TInv) <- list(ped@label, ped@label)
+    TInv
 }
 
 #' @title Gene flow from a pedigree
@@ -235,14 +237,19 @@ getT <- function(ped) {
 #'
 #' @param ped \code{\link{pedigree}}
 #' @param labs a character vector or a factor giving individual labels to
-#'   which to restrict the relationship matrix. If \code{labs} is a
-#'   factor then the levels of the factor are used as the labels.
-#'   Default is the complete set of individuals in the pedigree.
+#'   which to restrict the relationship matrix and corresponding factor using
+#'   Colleau et al. (2002) algorithm. If \code{labs} is a factor then the levels
+#'   of the factor are used as the labels. Default is the complete set of
+#'   individuals in the pedigree.
 #'
 #' @details Note that the right Cholesky factor is returned, which is upper
-#'   triangular, that is in A = LL' = R'R (lower %*% upper) we get R = L'
+#'   triangular, that is from A = LL' = R'R (lower %*% upper) we get R = L'
 #'   (upper triangular) and not L (lower triangular) as the function name might
 #'   suggest.
+#'
+#' @reference Colleau, J.-J. An indirect approach to the extensive calculation of
+#'   relationship coefficients. Genet Sel Evol 34, 409 (2002).
+#'   https://doi.org/10.1186/1297-9686-34-4-409
 #'
 #' @return matrix (\linkS4class{dtCMatrix} - upper triangular sparse)
 #' @export
@@ -264,38 +271,25 @@ getT <- function(ped) {
 #' stopifnot(!any(abs(round(L, digits = 4) - LExp) > .Machine$double.eps))
 #' LExp <- chol(getA(ped))
 #' stopifnot(!any(abs(L - LExp) > .Machine$double.eps))
-relfactor <- function(ped, labs) {
+#'
+#' (L <- getL(ped, labs = 4:6))
+#' (LExp <- chol(getA(ped)[4:6, 4:6]))
+#' stopifnot(!any(abs(L - LExp) > .Machine$double.eps))
+relfactor <- function(ped, labs = NULL) {
     stopifnot(is(ped, "pedigree"))
-    if (missing(labs)) { # "square" case
+    if (is.null(labs)) {
         # A = TDT' = TSST'
-        #   = LL' --> L' = ST'
+        #   = LL' = R'R --> L' = ST' = R
         return(sqrt(getD(ped, vector = FALSE)) %*% Matrix::t(getT(ped)))
     }
-    labs <- factor(labs) # drop unused levels from a factor
+    # Drop unused levels and set possible levels
+    labs <- factor(labs, levels = ped@label)
     stopifnot(all(labs %in% ped@label))
-    # A = TDT' = TSST'
-    #   = LL' --> L' = ST'
-    # TODO: Make this clearer to follow
-    # TODO: We make L' = R (right Cholesky factor) here
-    rect <- Matrix::Diagonal(x = sqrt(Dmat(ped))) %*%
-        Matrix::solve(Matrix::t(as(ped, "sparseMatrix")), # rectangular factor
-              as(factor(ped@label, levels = ped@label), "sparseMatrix"))
-    # TODO: we make A = LL' = R'R here
-    tmpA <- Matrix::crossprod(rect)
-    tmp <- ped@label %in% labs
-    tmpA <- tmpA[tmp, tmp]
-
-    # TODO: we sort here
-    labped <- ped@label[tmp]
-    orlab <- order(as.numeric(factor(labped, levels=labs, ordered = TRUE)))
-    labped <- as.character(labped[orlab])
-    tmpA <- tmpA[orlab, orlab]
-    stopifnot(all.equal(as.character(labped), as.character(labs)))
-    # TODO: and get the right Cholesky factor L' = R
-    # TODO: why chol again if we had the right Cholesky factor L' = R above?
-    relf <- Matrix::chol(tmpA)
-    dimnames(relf) <- list(labs, labs)
-    relf
+    # Right Cholesky factor L' = R
+    LSubset <- Matrix::chol(getASubset(ped = ped, labs = labs)) # dgCMatrix (sparse)
+    # TODO: why is LSubset dense matrix (standard) and not sparse upper triangular?
+    dimnames(LSubset) <- list(labs, labs)
+    LSubset
 }
 
 #' @describeIn relfactor
@@ -303,15 +297,13 @@ getL <- relfactor
 
 #' @title Inverse relationship factor from a pedigree
 #'
-#' @description Get inverse of the right Cholesky factor of the relationship
+#' @description Get inverse of the left Cholesky factor of the relationship
 #'   matrix for the pedigree \code{ped}.
 #'
-#' @details Note that the inverse of the right Cholesky factor is returned, which
-#'   is lower triangular, that is in A = LL' (lower %*% upper) and
-#'   inv(A) = inv(LL') = inv(L)' inv(L)
-#'
-#'   we get L' (upper triangular)
-#'   and not L (lower triangular) as the function name might suggest.
+#' @details Note that the inverse of the left Cholesky factor is returned,
+#'   which is lower triangular, that is from A = LL' (lower %*% upper) and
+#'   inv(A) = inv(LL') = inv(L)' inv(L) (upper %*% lower) we get inv(L) (lower
+#'   triangular).
 #'
 #' @param ped \code{\link{pedigree}}
 #' @return matrix (\linkS4class{dtCMatrix} - triangular sparse)
@@ -321,6 +313,7 @@ getL <- relfactor
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
 #' (LInv <- getLInv(ped))
+#' solve(Matrix::t(getL(ped)))
 #'
 #' # Test for correctness
 #' LInvExp <- matrix(data = c( 1.0000,  0.0000,  0.0000,  0.0000,  0.0000, 0.0000,
@@ -355,7 +348,7 @@ relfactorInv <- function(ped) {
 #' @describeIn relfactorInv
 getLInv <- relfactorInv
 
-#' @title Inverse of the Additive Relationship Matrix
+#' @title Inverse of the additive relationship matrix
 #'
 #' @description Returns the inverse of additive relationship matrix for the
 #'   pedigree.
@@ -394,11 +387,16 @@ getAInv <- function(ped) {
     AInv
 }
 
-#' @title Additive Relationship Matrix
+#' @title Additive relationship matrix
 #'
 #' @description Returns the additive relationship matrix for the pedigree.
 #'
 #' @param ped \code{\link{pedigree}}
+#' @param labs a character vector or a factor giving individual labels to
+#'   which to restrict the relationship matrix and corresponding factor. If
+#'   \code{labs} is a factor then the levels of the factor are used as the
+#'   labels. Default is the complete set of individuals in the pedigree.
+#'
 #' @return matrix (\linkS4class{dsCMatrix} - symmetric sparse)
 #' @export
 #' @examples
@@ -417,12 +415,67 @@ getAInv <- function(ped) {
 #'                byrow = TRUE, nrow = 6)
 #' stopifnot(!any(abs(A - AExp) > .Machine$double.eps))
 #' stopifnot(Matrix::isSymmetric(A))
-getA <- function(ped) {
-    # A = LL' = R'R
-    # crossprod() does X'X --> R'R
-    aMx <- Matrix::crossprod(getL(ped))
-    dimnames(aMx) <- list(ped@label, ped@label)
+getA <- function(ped, labs = NULL) {
+    if (is.null(labs)) {
+        # A = LL' = R'R
+        # crossprod() does X'X --> R'R
+        aMx <- Matrix::crossprod(getL(ped, labs = labs))
+        dimnames(aMx) <- list(ped@label, ped@label)
+    } else {
+        aMX <- getASubset(ped = ped, labs = labs)
+    }
     aMx
+}
+
+#' @title Subset of additive relationship matrix
+#'
+#' @description Returns subset of the additive relationship matrix for the pedigree.
+#'
+#' @param ped \code{\link{pedigree}}
+#' @param labs a character vector or a factor giving individual labels to
+#'   which to restrict the relationship matrix and corresponding factor using
+#'   Colleau et al. (2002) algorithm. If \code{labs} is a factor then the levels
+#'   of the factor are used as the labels. Default is the complete set of
+#'   individuals in the pedigree.
+#'
+#' @reference Colleau, J.-J. An indirect approach to the extensive calculation of
+#'   relationship coefficients. Genet Sel Evol 34, 409 (2002).
+#'   https://doi.org/10.1186/1297-9686-34-4-409
+#'
+#' @return matrix (\linkS4class{dsCMatrix} - symmetric sparse)
+#' @export
+#' @examples
+#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+#'                 dam =  c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
+#' (A <- getA(ped))
+#' (ASubset  <- A[4:6, 4:6])
+#' (ASubset2 <- getASubset(ped, labs = 4:6))
+#'
+#' (ASubset3  <- A[6:4, 6:4])
+#' (ASubset4 <- getASubset(ped, labs = 6:4))
+#'
+#' # Test for correctness
+#' stopifnot(!any(abs(ASubset - ASubset2) > .Machine$double.eps))
+#' stopifnot(!any(abs(ASubset3 - ASubset4) > .Machine$double.eps))
+#' stopifnot(Matrix::isSymmetric(ASubset2))
+#' stopifnot(Matrix::isSymmetric(ASubset4))
+getASubset <- function(ped, labs) {
+    stopifnot(is(ped, "pedigree"))
+    stopifnot(!missing(labs))
+    nLabs <- length(labs)
+    nInd <- length(ped@label)
+    # A x = y; if x is all 0s and 1 in the k-th position then y is A[, k]
+    # inv(A) A x = inv(A) y
+    # inv(A) y = x; solve for y to get A[, k] - column
+    # inv(A) Y = X; solve for Y to get A[, k] - matrix
+    numLabs <- as.numeric(labs)
+    X <- Matrix::sparseMatrix(i = numLabs, j = 1:nLabs,
+                              x = 1, dims = c(nInd, nLabs)) # dgCMatrix (sparse)
+    ASubset <- Matrix::solve(getAInv(ped), X)[numLabs, ] # dgCMatrix (sparse)
+    ASubset <- as(ASubset, "symmetricMatrix") # dsCMatrix (sparse)
+    dimnames(ASubset) <- list(labs, labs)
+    ASubset
 }
 
 #' @title Counts number of generations of ancestors for one subject. Use recursion.
