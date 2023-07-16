@@ -2,7 +2,7 @@
 % Please edit documentation in R/getASelfing.R
 \name{getASelfing}
 \alias{getASelfing}
-\title{Extends the pedigree according to number of selfing cycles 
+\title{Extends the pedigree according to number of selfing cycles
 and also optionally computes the Additive Relationship Matrix for that pedigree.}
 \usage{
 getASelfing(
@@ -28,9 +28,9 @@ getASelfing(
 
 \item{nCyclesDefault}{default value of nCycles}
 
-\item{sepChar}{}
+\item{sepChar}{character, used for expanded pedigree IDs}
 
-\item{verbose}{}
+\item{verbose}{logical, print progress}
 
 \item{fileNewPed}{Output csv file (comma separated value) with columns 'label', 'sire', 'dam', with the full pull pedigree expanded taking into account the selfing cycles}
 
@@ -40,6 +40,6 @@ getASelfing(
 Returns A matrix computed for the extended pedigree if computeA=TRUE
 }
 \description{
-Extends the pedigree according to number of selfing cycles 
+Extends the pedigree according to number of selfing cycles
 and also optionally computes the Additive Relationship Matrix for that pedigree.
 }

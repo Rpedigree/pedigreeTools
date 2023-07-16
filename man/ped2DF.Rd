@@ -15,7 +15,7 @@ a data frame
 \description{
 Express a pedigree as a data frame with \code{sire} and
   \code{dam} stored as factors. If the pedigree is an object of
-  class \code{\link{pedinbred}} then the inbreeding coefficients are
+  class \linkS4class{pedinbred} then the inbreeding coefficients are
   appended as the variable \code{F}
 }
 \examples{

@@ -56,11 +56,12 @@ setAs("pedigree", "data.frame",
 #'
 #' @description Express a pedigree as a data frame with \code{sire} and
 #'   \code{dam} stored as factors. If the pedigree is an object of
-#'   class \code{\link{pedinbred}} then the inbreeding coefficients are
+#'   class \linkS4class{pedinbred} then the inbreeding coefficients are
 #'   appended as the variable \code{F}
 #'
 #' @param x \code{\link{pedigree}}
 #' @return a data frame
+#' @export
 #' @examples
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
@@ -114,7 +115,7 @@ setMethod("chol", "pedigree",
 #'
 #' # Test for correctness
 #' FExp <- c(0.000, 0.000, 0.000, 0.000, 0.125, 0.125)
-#' stopifnot(!any(abs(D - DExp) > .Machine$double.eps))
+#' stopifnot(!any(abs(F - FExp) > .Machine$double.eps))
 inbreeding <- function(ped) {
     stopifnot(is(ped, "pedigree"))
     .Call(pedigree_inbreeding, ped)
@@ -159,9 +160,11 @@ Dmat <- function(ped, vector = TRUE) {
 }
 
 #' @describeIn Dmat Mendelian sampling variance
+#' @export
 getD <- Dmat
 
 #' @describeIn Dmat  Mendelian sampling precision (= 1 / variance)
+#' @export
 getDInv <- function(ped, vector = TRUE) {
     ans <- 1 / getD(ped)
     if (!vector) {
@@ -293,6 +296,7 @@ relfactor <- function(ped, labs = NULL) {
 }
 
 #' @describeIn relfactor Relationship factor from a pedigree
+#' @export
 getL <- relfactor
 
 #' @title Inverse relationship factor from a pedigree
@@ -346,6 +350,7 @@ relfactorInv <- function(ped) {
 }
 
 #' @describeIn relfactorInv Inverse relationship factor from a pedigree
+#' @export
 getLInv <- relfactorInv
 
 #' @title Inverse of the additive relationship matrix
@@ -465,7 +470,7 @@ getASubset <- function(ped, labs) {
     stopifnot(!missing(labs))
     nLabs <- length(labs)
     nInd <- length(ped@label)
-    # A x = y; if x is all 0s and 1 in the k-th position then y is A[, k]
+    # A x = y; if x is all 0s and a 1 in the k-th position then y is A[, k]
     # inv(A) A x = inv(A) y
     # inv(A) y = x; solve for y to get A[, k] - column
     # inv(A) Y = X; solve for Y to get A[, k] - matrix
@@ -480,53 +485,63 @@ getASubset <- function(ped, labs) {
 
 #' @title Counts number of generations of ancestors for one subject. Use recursion.
 #'
-#' @param pede data frame with a pedigree and a column for the number of
+#' @param ped data.frame with a pedigree and a column for the number of
 #'   generations of each subject.
 #' @param id subject for which we want the number of generations.
 #' @param ngen number of generation
 #' @return a data frame object with the pedigree and generation of
 #'   ancestors for subject id.
+#' @export
 #' @examples
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-#' getGenAncestors(ped)
-getGenAncestors <- function(pede, id, ngen=NULL){
-    j <- which(pede$id==id)
-    parents <- c(pede$sire[j], pede$dam[j])
+#' ped <- ped2DF(ped)
+#' ped$id <- row.names(ped)
+#' ped$generation <- NA
+#' (tmp1 <- getGenAncestors(ped, id = 1))
+#' (tmp2 <- getGenAncestors(ped, id = 4))
+#' (tmp3 <- getGenAncestors(ped, id = 6))
+#'
+#' # Test for correctness
+#' stopifnot(tmp1$generation[1] == 0)
+#' stopifnot(all(is.na(tmp1$generation[-1])))
+#' stopifnot(all(tmp2$generation[c(1, 4)] == c(0, 1)))
+#' stopifnot(all(is.na(tmp2$generation[-c(1, 4)])))
+#' stopifnot(all(tmp3$generation == c(0, 0, 1, 1, 2, 3)))
+getGenAncestors <- function(ped, id, ngen = NULL) {
+    j <- which(ped$id == id)
+    parents <- c(ped$sire[j], ped$dam[j])
     parents <- parents[!is.na(parents)]
     np <- length(parents)
-    if(np==0)
-    {
-        pede$gene[j] <-0
-        return(pede)
+    if (np == 0) {
+        ped$generation[j] <-0
+        return(ped)
     }
     ## get the number of generations in parent number one
-    tmpgenP1 <- pede$gene[pede$id==parents[1]]
-    if( is.na(tmpgenP1))
-    {
+    tmpgenP1 <- ped$generation[ped$id == parents[1]]
+    if (is.na(tmpgenP1)) {
         #if ngen is not null, and not cero, ngen<- ngen-1
         #if ngen is cero, do not call recurrsively anymore
-        pede <- getGenAncestors(pede, parents[1])
-        genP1  <- 1 + pede$gene[pede$id==parents[1]]
-    }  else {
+        ped <- getGenAncestors(ped, parents[1])
+        genP1  <- 1 + ped$generation[ped$id == parents[1]]
+    } else {
         genP1 <- 1 + tmpgenP1
     }
     ## find out if there is a parent number two
-    if (np==2){
-        tmpgenP2 <- pede$gene[pede$id==parents[2]]
-        if( is.na(tmpgenP2))
-        {
-            pede <- getGenAncestors(pede, parents[2])
-            genP2  <- 1 + pede$gene[pede$id==parents[2]]
-        }  else {
+    if (np == 2) {
+        tmpgenP2 <- ped$generation[ped$id == parents[2]]
+        if(is.na(tmpgenP2)) {
+            ped <- getGenAncestors(ped, parents[2])
+            genP2  <- 1 + ped$generation[ped$id == parents[2]]
+        } else {
             genP2 <- 1 + tmpgenP2
         }
         genP1 <- max(genP1, genP2)
     }
-    pede$gene[j] <- genP1
+    ped$generation[j] <- genP1
     ## print(paste('id:', id, ', gen:', genP1, ', row:', j))
-    pede
+    ped
 }
 
 #' @title Edits a disordered or incomplete pedigree
@@ -543,41 +558,45 @@ getGenAncestors <- function(pede, id, ngen=NULL){
 #' @return a data frame with the pedigree ordered.
 #' @export
 #' @examples
-#' pede <- data.frame(sire=as.character(c(NA,NA,NA,NA,NA,1,3,5,6,4,8,1,10,8)),
-#'                    dam=as.character(c(NA,NA,NA,NA,NA,2,2,NA,7,7,NA,9,9,13)),
-#'                    label=as.character(1:14))
-#' pede <- pede[sample(replace=FALSE, 1:14),]
-#' pede <- editPed(sire=pede$sire, dam=pede$dam, label=pede$label)
-#' ped <- with(pede, pedigree(label=label, sire=sire, dam=dam))
+#' ped <- data.frame(sire=as.character(c(NA,NA,NA,NA,NA,1,3,5,6,4,8,1,10,8)),
+#'                   dam=as.character(c(NA,NA,NA,NA,NA,2,2,NA,7,7,NA,9,9,13)),
+#'                   label=as.character(1:14))
+#' ped <- ped[sample(replace=FALSE, 1:14),]
+#' ped <- editPed(sire = ped$sire, dam = ped$dam, label = ped$label)
+#' ped <- with(ped, pedigree(label = label, sire = sire, dam = dam))
 editPed <- function(sire, dam, label, verbose = FALSE) {
     nped <- length(sire)
     if (nped != length(dam))  stop("sire and dam have to be of the same length")
     if (nped != length(label)) stop("label has to be of the same length than sire and dam")
     tmp <- unique(sort(c(as.character(sire), as.character(dam))))
 
-    missingP <-NULL
-    if(any(completeId <- ! tmp %in% as.character(label))) missingP <- tmp[completeId]
+    missingP <- NULL
+    if (any(completeId <- !(tmp %in% as.character(label)))) {
+        missingP <- tmp[completeId]
+    }
     labelOl <- c(as.character(missingP),as.character(label))
-    sireOl <- c(rep(NA, times=length(missingP)),as.character(sire))
-    damOl  <- c(rep(NA, times=length(missingP)),as.character(dam))
+    sireOl <- c(rep(NA, times = length(missingP)), as.character(sire))
+    damOl  <- c(rep(NA, times = length(missingP)), as.character(dam))
     sire <- as.integer(factor(sireOl, levels = labelOl))
-    dam  <- as.integer(factor(damOl, levels = labelOl))
+    dam <- as.integer(factor(damOl, levels = labelOl))
     nped <-length(labelOl)
     label <-1:nped
-    sire[!is.na(sire) & (sire<1 | sire>nped)] <- NA
+    sire[!is.na(sire) & (sire < 1 | sire > nped)] <- NA
     dam[!is.na(dam) & (dam < 1 | dam > nped)] <- NA
-    pede <- data.frame(id= label, sire= sire, dam= dam, gene=rep(NA, times=nped))
-    noParents <- (is.na(pede$sire) & is.na(pede$dam))
-    pede$gene[noParents] <- 0
-    for(i in 1:nped){
+    ped <- data.frame(id = label, sire = sire, dam = dam,
+                      generation = rep(NA, times = nped))
+    noParents <- (is.na(ped$sire) & is.na(ped$dam))
+    ped$generation[noParents] <- 0
+    for (i in 1:nped) {
         if(verbose) print(i)
-        if(is.na(pede$gene[i])){
-            id <-pede$id[i]
-            pede <-getGenAncestors(pede, id)
-        }}
-    ord<- order(pede$gene)
-    ans<-data.frame(label=labelOl, sire=sireOl, dam=damOl, gene=pede$gene,
-                    stringsAsFactors =F)
+        if(is.na(ped$generation[i])){
+            id <-ped$id[i]
+            ped <-getGenAncestors(ped, id)
+        }
+    }
+    ord <- order(ped$generation)
+    ans <- data.frame(label = labelOl, sire = sireOl, dam = damOl,
+                      generation = ped$generation, stringsAsFactors = FALSE)
     ans[ord,]
 }
 
@@ -594,24 +613,24 @@ editPed <- function(sire, dam, label, verbose = FALSE) {
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
 #'                 label = 1:6)
-prunePed <- function(ped,selectVector,ngen=2) {
+prunePed <- function(ped, selectVector, ngen = 2) {
 
   ped <- as.matrix(ped)
 
-  returnPed <- matrix(c(NA,NA,NA),nrow=1,ncol=3)
+  returnPed <- matrix(c(NA, NA, NA), nrow = 1, ncol = 3)
 
-  findBase <- ped[,"label"] %in% selectVector
-  basePed <- ped[findBase,]
-  findSire <- ped[,"label"] %in% basePed[,"sire"]
-  findDam <- ped[,"label"] %in% basePed[,"dam"]
+  findBase <- ped[, "label"] %in% selectVector
+  basePed <- ped[findBase, ]
+  findSire <- ped[, "label"] %in% basePed[, "sire"]
+  findDam <- ped[, "label"] %in% basePed[, "dam"]
 
-  newSelVec <- ped[findSire|findDam,"label"]
+  newSelVec <- ped[findSire | findDam, "label"]
   newSelVec <- newSelVec[!(newSelVec %in% selectVector)]
 
   if (ngen != -1) {
     returnPed <- basePed
-    returnPed <- unique(rbind(returnPed,prunePed(ped,newSelVec,ngen-1)))
-    returnPed <- returnPed[rowSums(is.na(returnPed))!=3,]
+    returnPed <- unique(rbind(returnPed, prunePed(ped, newSelVec, ngen - 1)))
+    returnPed <- returnPed[rowSums(is.na(returnPed)) != 3, ]
   } else {
     return(returnPed)
   }

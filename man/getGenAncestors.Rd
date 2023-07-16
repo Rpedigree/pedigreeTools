@@ -4,10 +4,10 @@
 \alias{getGenAncestors}
 \title{Counts number of generations of ancestors for one subject. Use recursion.}
 \usage{
-getGenAncestors(pede, id, ngen = NULL)
+getGenAncestors(ped, id, ngen = NULL)
 }
 \arguments{
-\item{pede}{data frame with a pedigree and a column for the number of
+\item{ped}{data.frame with a pedigree and a column for the number of
 generations of each subject.}
 
 \item{id}{subject for which we want the number of generations.}
@@ -25,5 +25,17 @@ Counts number of generations of ancestors for one subject. Use recursion.
 ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
                 dam =  c(NA, NA, 2, NA, 3, 2),
                 label = 1:6)
-getGenAncestors(ped)
+ped <- ped2DF(ped)
+ped$id <- row.names(ped)
+ped$generation <- NA
+(tmp1 <- getGenAncestors(ped, id = 1))
+(tmp2 <- getGenAncestors(ped, id = 4))
+(tmp3 <- getGenAncestors(ped, id = 6))
+
+# Test for correctness
+stopifnot(tmp1$generation[1] == 0)
+stopifnot(all(is.na(tmp1$generation[-1])))
+stopifnot(all(tmp2$generation[c(1, 4)] == c(0, 1)))
+stopifnot(all(is.na(tmp2$generation[-c(1, 4)])))
+stopifnot(all(tmp3$generation == c(0, 0, 1, 1, 2, 3)))
 }
