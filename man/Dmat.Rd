@@ -2,22 +2,46 @@
 % Please edit documentation in R/pedigree.R
 \name{Dmat}
 \alias{Dmat}
-\title{Diagonal of D in the A = TDT' factorization.}
+\alias{getD}
+\alias{getDInv}
+\title{Mendelian sampling variance}
 \usage{
-Dmat(ped)
+Dmat(ped, vector = TRUE)
+
+getD(ped, vector = TRUE)
+
+getDInv(ped, vector = TRUE)
 }
 \arguments{
-\item{ped}{an object that inherits from class \linkS4class{pedigree}}
+\item{ped}{\code{\link{pedigree}}}
+
+\item{vector}{logical, return a vector or sparse matrix}
 }
 \value{
 a numeric vector
 }
 \description{
 Determine the diagonal factor in the decomposition of the
-relationship matrix A as TDT' where T is unit lower triangular.
+  relationship matrix A as TDT' where T is unit lower triangular.
 }
-\examples{
-ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
-Dmat(ped)
-}
+\section{Functions}{
+\itemize{
+\item \code{getD()}: Mendelian sampling variance
 
+\item \code{getDInv()}: Mendelian sampling precision (= 1 / variance)
+
+}}
+\examples{
+ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+                dam =  c(NA, NA, 2, NA, 3, 2),
+                label = 1:6)
+(D <- getD(ped))
+(DInv <- getDInv(ped))
+
+# Test for correctness
+DExp <- c(1.00, 1.00, 0.50, 0.75, 0.50, 0.46875)
+stopifnot(!any(abs(D - DExp) > .Machine$double.eps))
+
+DInvExp <- 1 / DExp
+stopifnot(!any(abs(DInv - DInvExp) > .Machine$double.eps))
+}

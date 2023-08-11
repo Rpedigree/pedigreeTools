@@ -2,28 +2,66 @@
 % Please edit documentation in R/pedigree.R
 \name{relfactor}
 \alias{relfactor}
+\alias{getL}
 \title{Relationship factor from a pedigree}
 \usage{
-relfactor(ped, labs)
+relfactor(ped, labs = NULL)
+
+getL(ped, labs = NULL)
 }
 \arguments{
-\item{ped}{a pedigree that includes the individuals who occur in svec}
+\item{ped}{\code{\link{pedigree}}}
 
-\item{labs}{a character vector or a factor giving the labels to
-which to restrict the relationship matrix. If \code{labs} is a
-factor then the levels of the factor are used as the labels.
-Default is the complete set of labels in the pedigree.}
+\item{labs}{a character vector or a factor giving individual labels to
+which to restrict the relationship matrix and corresponding factor using
+Colleau et al. (2002) algorithm. If \code{labs} is a factor then the levels
+of the factor are used as the labels. Default is the complete set of
+individuals in the pedigree.}
 }
 \value{
-an object that inherits from \linkS4class{CHMfactor}
+matrix (\linkS4class{dtCMatrix} - upper triangular sparse)
 }
 \description{
-Determine the right Cholesky factor of the relationship matrix for
-the pedigree \code{ped}, possibly restricted to the specific labels
-that occur in \code{labs}.
+Determine the right Cholesky factor of the relationship matrix
+  for the pedigree \code{ped}, possibly restricted to the specific labels
+  that occur in \code{labs}.
 }
-\examples{
-ped <- pedigree(sire=c(NA,NA,1,1,4,5), dam=c(NA,NA,2,NA,3,2), label=1:6)
-relfactor(ped)
+\details{
+Note that the right Cholesky factor is returned, which is upper
+  triangular, that is from A = LL' = R'R (lower %*% upper) we get R = L'
+  (upper triangular) and not L (lower triangular) as the function name might
+  suggest.
 }
+\section{Functions}{
+\itemize{
+\item \code{getL()}: Relationship factor from a pedigree
 
+}}
+\examples{
+ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
+                dam =  c(NA, NA, 2, NA, 3, 2),
+                label = 1:6)
+(L <- getL(ped))
+chol(getA(ped))
+
+# Test for correctness
+LExp <- matrix(data = c(1.0000, 0.0000, 0.5000, 0.5000, 0.5000, 0.2500,
+                        0.0000, 1.0000, 0.5000, 0.0000, 0.2500, 0.6250,
+                        0.0000, 0.0000, 0.7071, 0.0000, 0.3536, 0.1768,
+                        0.0000, 0.0000, 0.0000, 0.8660, 0.4330, 0.2165,
+                        0.0000, 0.0000, 0.0000, 0.0000, 0.7071, 0.3536,
+                        0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.6847),
+               byrow = TRUE, nrow = 6)
+stopifnot(!any(abs(round(L, digits = 4) - LExp) > .Machine$double.eps))
+LExp <- chol(getA(ped))
+stopifnot(!any(abs(L - LExp) > .Machine$double.eps))
+
+(L <- getL(ped, labs = 4:6))
+(LExp <- chol(getA(ped)[4:6, 4:6]))
+stopifnot(!any(abs(L - LExp) > .Machine$double.eps))
+}
+\references{
+Colleau, J.-J. An indirect approach to the extensive calculation of
+  relationship coefficients. Genet Sel Evol 34, 409 (2002).
+  https://doi.org/10.1186/1297-9686-34-4-409
+}

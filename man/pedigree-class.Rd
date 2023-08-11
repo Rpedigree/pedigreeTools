@@ -7,4 +7,3 @@
 \description{
 Pedigree class
 }
-
