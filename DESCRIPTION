@@ -2,7 +2,7 @@ Package: pedigreeTools
 Version: 0.2
 Date: 2023-08-11
 Title: Versatile Functions for Working with Pedigrees
-Author: Ana Ines Vazquez, Douglas Bates, Siddharth Avadhanam, Paulino Perez Rodriguez
+Author: Ana Ines Vazquez, Douglas Bates, Siddharth Avadhanam, Paulino Perez Rodriguez and Gregor Gorjanc
 Maintainer:  Paulino Perez Rodriguez <perpdgo@colpos.mx>
 Description: Tools to sort, edit and prune pedigrees and to extract the inbreeding coefficients
     and the relationship matrix (includes code for pedigrees from self-pollinated species). 
