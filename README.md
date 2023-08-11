@@ -1,4 +1,4 @@
-pedigreeTool
+pedigreeTools
 =========
 The ```pedigreeTools``` package offers a suit of functions for pedigree analyses, 
 including: sorting and editing pedigree data, computing inbreeding, 
