@@ -7,15 +7,15 @@ Maintainer:  Paulino Perez Rodriguez <perpdgo@colpos.mx>
 Description: Tools to sort, edit and prune pedigrees and to extract the inbreeding coefficients
     and the relationship matrix (includes code for pedigrees from self-pollinated species). 
     The use of pedigree data is central to genetics research within the animal and plant breeding communities to predict 
-    breeding values. The relationship matrix between the individuals can be derived from pedigree structure following
-    the algorithms described for example in Vazquez et al., 2010 <doi:10.2527/jas.2009-1952>.
+    breeding values. The relationship matrix between the individuals can be derived from pedigree structure 
+    ('Vazquez et al., 2010') <doi:10.2527/jas.2009-1952>.
 Depends:
     R(>= 3.0.0),
     methods
 Imports:
     Matrix (>= 1.0)
 LazyLoad: yes
-LazyData: yes
 License: GPL-3
 URL: https://github.com/Rpedigree/pedigreeTools/
 RoxygenNote: 7.2.3
+Encodig: UTF-8
