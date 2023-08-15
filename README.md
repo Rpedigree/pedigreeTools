@@ -1,5 +1,12 @@
 pedigreeTools
 =========
+
+[![CRAN status](https://www.r-pkg.org/badges/version/pedigreeTools?color=green)](https://CRAN.R-project.org/package=pedigreeTools)
+[![CRAN checks](https://badges.cranchecks.info/worst/pedigreeTools.svg)](https://cran.r-project.org/web/checks/check_results_pedigreeTools.html)
+[![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/pedigreeTools)](http://www.r-pkg.org/pkg/pedigreeTools)
+[![Downloads](http://cranlogs.r-pkg.org/badges/pedigreeTools?color=blue)](http://www.r-pkg.org/pkg/pedigreeTools)
+
+
 The ```pedigreeTools``` package offers a suit of functions for pedigree analyses, 
 including: sorting and editing pedigree data, computing inbreeding, 
 additive relationships and functions of it (e.g., cholesky derived from a pedigree, 
