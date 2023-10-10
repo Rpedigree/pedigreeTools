@@ -43,7 +43,7 @@ setAs("pedigree", "sparseMatrix", # representation as T^{-1}
 	  as(new("dtTMatrix", i = rep.int(animal, 2)[ind] - 1L,
 		 j = j[ind] - 1L, x = rep.int(-0.5, sum(ind)),
 		 Dim = c(n,n), Dimnames = list(from@label, NULL),
-		 uplo = "L", diag = "U"), "dtCMatrix")
+		 uplo = "L", diag = "U"), "CsparseMatrix")
       })
 
 ## these data frames are now storage efficient but print less nicely
