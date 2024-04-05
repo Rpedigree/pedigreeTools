@@ -514,6 +514,12 @@ getA <- function(ped, labs = NULL) {
 #' stopifnot(!any(abs(ASubset3 - ASubset4) > .Machine$double.eps))
 #' stopifnot(Matrix::isSymmetric(ASubset2))
 #' stopifnot(Matrix::isSymmetric(ASubset4))
+#' # ... with pedigree that does not have individuals coded 1:n
+#' ped2 <- pedigree(sire = c(NA, NA, 2,  2, 5, 6),
+#'                  dam =  c(NA, NA, 3, NA, 4, 3),
+#'                  label = 2:7)
+#' ASubsetShift <- getASubset(ped2, labs = 5:7)
+#' stopifnot(!any(abs(ASubset2 - ASubsetShift) > .Machine$double.eps))
 getASubset <- function(ped, labs) {
     stopifnot(is(ped, "pedigree"))
     stopifnot(!missing(labs))
@@ -523,7 +529,11 @@ getASubset <- function(ped, labs) {
     # inv(A) A x = inv(A) y
     # inv(A) y = x; solve for y to get A[, k] - column
     # inv(A) Y = X; solve for Y to get A[, k] - matrix
-    numLabs <- as.numeric(labs)
+    numLabs <- match(x = labs, table = ped@label, nomatch = 0)
+    check <- numLabs == 0
+    if (any(check)) {
+        stop(paste0("These labs are no present in the pedigree: ", labs[check]))
+    }
     X <- Matrix::sparseMatrix(i = numLabs, j = 1:nLabs,
                               x = 1, dims = c(nInd, nLabs)) # dgCMatrix (sparse)
     ASubset <- Matrix::solve(getAInv(ped), X)[numLabs, ] # dgCMatrix (sparse)
