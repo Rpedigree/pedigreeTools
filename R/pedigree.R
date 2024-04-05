@@ -3,11 +3,12 @@
 #' @title Constructor for pedigree objects
 #'
 #' @description A simple constructor for a pedigree object. The main point for
-#'   the constructor is to use coercions to make the calls easier.
+#'   the constructor is to use coercions to make later function calls easier.
 #'
 #' @param sire integer vector or factor representation of the sires (see details)
 #' @param dam integer vector or factor representation of the dams (see details)
-#' @param label integer or character vector of individual labels (see details)
+#' @param label integer or character vector of individual labels/names
+#'   (see details)
 #'
 #' @return an pedigree object of class \linkS4class{pedigree}
 #'
@@ -16,14 +17,17 @@
 #'   in \code{label} unless they are unknown (represented either with \code{0}
 #'   or \code{NA} - see examples).
 #'
-#'   Parents must precede (appear in a row) before progeny.
+#'   Parents must precede (=appear in a row before) progeny.
 #'
 #'   See examples on requirements and capability of this function with respect
 #'   to encoding and ordering of the parents and progeny. The key point is that
 #'   \code{sire} and \code{dam} are first converted to a factor (hence any label
 #'   and their order are allowed) and then the factors are converted to an
-#'   integer considering \code{label} entries as the allowed labels and their
-#'   order.
+#'   integer considering \code{label} as the allowed levels and their order.
+#'   Importantly, ordering in \code{label} determines the order (see examples).
+#'
+#'   \code{label} is converted to character internally representing individual
+#'   labels/names.
 #'
 #' @seealso \code{link{editPed}}, \code{link{prunePed}}, and \code{link{ped2DF}}
 #'
@@ -70,6 +74,9 @@
 #' pedigree(sire = c(NA, NA,   6), dam =  c(NA, NA,   4), label = c(  6,   4,   1))
 pedigree <- function(sire, dam, label) {
     n <- length(sire)
+    if (0 %in% label) {
+        stop("0 is not an allowed label")
+    }
     labelex <- c(label, NA, 0)
     stopifnot(n == length(dam),
               n == length(label),
