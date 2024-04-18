@@ -15,7 +15,7 @@ setClass("pedigree", representation =
 	     dnmiss <- !is.na(dam)
 	     if (any(sire[snmiss] >= animal[snmiss]) ||
 		       any(dam[dnmiss]  >= animal[dnmiss]))
-		 return("the sire and dam must precede the offspring")
+		 return("the sire and dam must precede (=appear in a row before) the offspring")
              if (any(sire[snmiss] < 1 | sire[snmiss] > n) |
                  any(dam[dnmiss] < 1 | dam[dnmiss] > n))
                  return(paste("Non-missing sire or dam must be in [1,",
