@@ -167,6 +167,73 @@ SEXP pedigree_inbreeding(SEXP x)
 }
 
 /**
+ * @title Calculate Generation Numbers for a Pedigree
+ *
+ * @description This function calculates the generation numbers for a pedigree.
+ * It uses a recursive approach to determine the generation of each individual.
+ *
+ * @param sire SEXP (INTSXP) Vector of sire indices
+ * @param dam SEXP (INTSXP) Vector of dam indices
+ * @param label SEXP (STRSXP) Vector of individual labels (not used in calculation, but included for consistency)
+ *
+ * @return SEXP (INTSXP) A vector of generation numbers
+ *
+ * @details The generation of an individual is defined as one more than the maximum
+ * generation of its parents. Individuals with no parents (founders) are assigned
+ * generation 0. The function uses -1 as a placeholder for 'not yet calculated'
+ * during the recursive process.
+ *
+ */
+
+// Helper function declaration
+static void calc_gen(int id, int *sire_ptr, int *dam_ptr, int *gen_ptr, int n);
+
+SEXP C_get_generation(SEXP sire, SEXP dam, SEXP label) {
+    int n = LENGTH(sire);
+    int *sire_ptr = INTEGER(sire);
+    int *dam_ptr = INTEGER(dam);
+    SEXP generation = PROTECT(allocVector(INTSXP, n));
+    int *gen_ptr = INTEGER(generation);
+    
+    // Initialize all generations to -1 (not calculated)
+    for (int i = 0; i < n; i++) {
+        gen_ptr[i] = -1;
+    }
+
+    // Calculate generation for each individual
+    for (int i = 0; i < n; i++) {
+        calc_gen(i, sire_ptr, dam_ptr, gen_ptr, n);
+    }
+
+    UNPROTECT(1);
+    return generation;
+}
+
+// Helper function definition
+static void calc_gen(int id, int *sire_ptr, int *dam_ptr, int *gen_ptr, int n) {
+    if (gen_ptr[id] != -1) return;  // Already calculated
+    
+    int sire_id = sire_ptr[id] - 1;  // R indices are 1-based
+    int dam_id = dam_ptr[id] - 1;
+    
+    if (sire_id == -1 && dam_id == -1) {
+        gen_ptr[id] = 0;
+    } else {
+        int sire_gen = -1, dam_gen = -1;
+        if (sire_id != -1 && sire_id < n) {
+            calc_gen(sire_id, sire_ptr, dam_ptr, gen_ptr, n);
+            sire_gen = gen_ptr[sire_id];
+        }
+        if (dam_id != -1 && dam_id < n) {
+            calc_gen(dam_id, sire_ptr, dam_ptr, gen_ptr, n);
+            dam_gen = gen_ptr[dam_id];
+        }
+        gen_ptr[id] = (sire_gen > dam_gen ? sire_gen : dam_gen) + 1;
+    }
+}
+
+
+/**
  * @title Expand Pedigree for Selfing Generations
  * 
  * @description This function expands a pedigree to account for selfing generations.

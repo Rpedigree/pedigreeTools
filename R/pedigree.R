@@ -678,6 +678,8 @@ prunePed <- function(ped, selectVector, ngen = 2) {
 #' @details This function first checks if generation information is already stored in the
 #'   pedigree object. If not, it calculates the generation numbers using `getGenAncestors`.
 #'   The calculated generation numbers are then stored in the pedigree object's generation slot.
+#' 
+#' @useDynLib pedigreeTools get_generation
 #'
 #' @seealso \code{\link{getGenAncestors}} for the underlying function used to calculate
 #'   generation numbers, \code{\link{ped2DF}} for converting a pedigree object to a data frame.
@@ -692,37 +694,11 @@ prunePed <- function(ped, selectVector, ngen = 2) {
 #' @export
 getGeneration <- function(ped) {
     if (all(is.na(ped@generation))) {
-        ped_df <- ped2DF(ped)
-        ped_df$id <- seq_along(ped_df$label)
-        ped_df$generation <- NA_integer_
-        
-        # Function to recursively calculate generation
-        calcGen <- function(id) {
-            if (!is.na(ped_df$generation[id])) {
-                return(ped_df$generation[id])
-            }
-            
-            sire <- ped_df$sire[id]
-            dam <- ped_df$dam[id]
-            
-            if (is.na(sire) && is.na(dam)) {
-                gen <- 0
-            } else {
-                sire_gen <- if (!is.na(sire)) calcGen(which(ped_df$label == sire)) else -1
-                dam_gen <- if (!is.na(dam)) calcGen(which(ped_df$label == dam)) else -1
-                gen <- max(sire_gen, dam_gen) + 1
-            }
-            
-            ped_df$generation[id] <<- gen
-            return(gen)
-        }
-        
-        # Calculate generation for each individual
-        for (i in seq_along(ped_df$id)) {
-            calcGen(i)
-        }
-        
-        ped@generation <- as.integer(ped_df$generation)
+        # Call the C function
+        ped@generation <- .Call(get_generation, 
+                                ped@sire, 
+                                ped@dam, 
+                                ped@label)
     }
     return(ped)
 }
@@ -733,6 +709,8 @@ getGeneration <- function(ped) {
 #' @param ped An object of class "pedigree"
 #' @param sepChar Character used for expanded pedigree IDs (default: '-F')
 #' @param verbose Logical, whether to print progress (default: FALSE)
+#' 
+#' @useDynLib pedigreeTools expand_pedigree_selfing
 #'
 #' @return A new pedigree object with expanded entries for selfing generations
 #'
