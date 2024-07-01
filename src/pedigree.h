@@ -13,6 +13,4 @@ SEXP get_generation(SEXP sire, SEXP dam, SEXP label);
 SEXP expand_pedigree_selfing(SEXP labels, SEXP sires, SEXP dams, SEXP selfing_generations, SEXP sep_char, SEXP verbose);
 void print_progress_bar(int current, int total, int bar_width);
 
-
-
 #endif /* PEDIGREE_H */
