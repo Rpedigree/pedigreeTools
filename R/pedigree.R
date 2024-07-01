@@ -25,6 +25,8 @@ pedigree <- function(sire, dam, label, selfing_generation = NULL) {
     if (!is.null(selfing_generation)) {
         stopifnot(n == length(selfing_generation),
                   all(selfing_generation >= 0))
+    } else {
+        selfing_generation <- rep(0, n)
     }
     
     # Try initial checks, if they fail, use editPed
@@ -38,8 +40,12 @@ pedigree <- function(sire, dam, label, selfing_generation = NULL) {
         fixed_ped <- editPed(sire = sire, dam = dam, label = label)
         sire <- fixed_ped$sire
         dam <- fixed_ped$dam
+        n <- length(fixed_ped$label)
+        selfing_generation_tmp = rep(0, n)
+        # get the initial selfing generations assigned back
+        selfing_generation_tmp[match(label, fixed_ped$label)] <- selfing_generation
+        selfing_generation = selfing_generation_tmp
         label <- fixed_ped$label
-        n <- length(label)
     }
     
     # Proceed with creating the pedigree object
@@ -51,14 +57,13 @@ pedigree <- function(sire, dam, label, selfing_generation = NULL) {
         
         # Initialize generation and selfing_generation with NAs
         generation <- rep(NA_integer_, n)
-        selfing_gen <- if(is.null(selfing_generation)) rep(NA_integer_, n) else as.integer(selfing_generation)
         
         ped_out = new("pedigree", 
             sire = sire, 
             dam = dam, 
             label = as.character(label),
-            generation = generation,
-            selfing_generation = selfing_gen,
+            generation = as.integer(generation),
+            selfing_generation = as.integer(selfing_generation),
             expanded = rep(FALSE, n))
         ped_out = getGeneration(ped_out)
         return(ped_out)
@@ -743,6 +748,11 @@ expandPedigreeSelfing <- function(ped, sepChar = '-F', verbose = FALSE) {
                          expanded = logical(), stringsAsFactors = FALSE)
     row <- 0
     
+    # Create a progress bar if verbose is TRUE
+    if (verbose) {
+        pb <- txtProgressBar(min = 0, max = nrow(PED), style = 3)
+    }
+    
     for(i in 1:nrow(PED)){
         id <- PED$label[i]
         cycles <- PED$selfing_generation[i]
@@ -773,8 +783,13 @@ expandPedigreeSelfing <- function(ped, sepChar = '-F', verbose = FALSE) {
         PED$dam[PED$dam == id] <- id  # Use the original ID
         
         if (verbose) {
-            print(i)
+            setTxtProgressBar(pb, i)
         }
+    }
+    
+    # Close the progress bar if it was created
+    if (verbose) {
+        close(pb)
     }
     
     # Create new pedigree object
