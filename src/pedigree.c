@@ -188,7 +188,7 @@ SEXP pedigree_inbreeding(SEXP x)
 // Helper function declaration
 static void calc_gen(int id, int *sire_ptr, int *dam_ptr, int *gen_ptr, int n);
 
-SEXP C_get_generation(SEXP sire, SEXP dam, SEXP label) {
+SEXP get_generation(SEXP sire, SEXP dam, SEXP label) {
     int n = LENGTH(sire);
     int *sire_ptr = INTEGER(sire);
     int *dam_ptr = INTEGER(dam);
