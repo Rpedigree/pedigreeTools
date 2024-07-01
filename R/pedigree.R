@@ -1,5 +1,3 @@
-#### "pedigree" class methods
-
 #' @title Constructor for pedigree objects
 #'
 #' @description A simple constructor for a pedigree object. The main point for
@@ -8,29 +6,70 @@
 #' @param sire integer vector or factor representation of the sires
 #' @param dam integer vector or factor representation of the dams
 #' @param label character vector of individual labels
+#' @param selfing_generation integer vector of selfing generations (optional)
 #' @return an pedigree object of class \linkS4class{pedigree}
-#' @note \code{sire}, \code{dam} and \code{label} must all have the
+#' @note \code{sire}, \code{dam}, \code{label}, and \code{selfing_generation} (if provided) must all have the
 #'   same length and all labels in \code{sire} and \code{dam} must occur
 #'   in \code{label}
 #' @export
 #' @examples
 #' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
 #'                 dam =  c(NA, NA, 2, NA, 3, 2),
-#'                 label = 1:6)
+#'                 label = 1:6,
+#'                 selfing_generation = c(0, 0, 2, 1, 0, 3))
 #' ped
-pedigree <- function(sire, dam, label) {
+pedigree <- function(sire, dam, label, selfing_generation = NULL) {
     n <- length(sire)
     labelex <- c(label, NA, 0)
     stopifnot(n == length(dam),
               n == length(label),
               all(sire %in% labelex),
               all(dam %in% labelex))
-    sire <- as.integer(factor(sire, levels = label))
-    dam <- as.integer(factor(dam, levels = label))
-    sire[sire < 1 | sire > n] <- NA
-    dam[dam < 1 | dam > n] <- NA
-    new("pedigree", sire = sire, dam = dam,
-        label = as.character(label))
+    
+    if (!is.null(selfing_generation)) {
+        stopifnot(n == length(selfing_generation),
+                  all(selfing_generation >= 0))
+    }
+    
+    # Try initial checks, if they fail, use editPed
+    if (!all(
+        n == length(dam),
+        n == length(label),
+        all(sire %in% labelex),
+        all(dam %in% labelex)
+    )) {
+        message("Initial pedigree checks failed. Attempting to fix with editPed...")
+        fixed_ped <- editPed(sire = sire, dam = dam, label = label)
+        sire <- fixed_ped$sire
+        dam <- fixed_ped$dam
+        label <- fixed_ped$label
+        n <- length(label)
+    }
+    
+    # Proceed with creating the pedigree object
+    tryCatch({
+        sire <- as.integer(factor(sire, levels = label))
+        dam <- as.integer(factor(dam, levels = label))
+        sire[sire < 1 | sire > n] <- NA
+        dam[dam < 1 | dam > n] <- NA
+        
+        # Initialize generation and selfing_generation with NAs
+        generation <- rep(NA_integer_, n)
+        selfing_gen <- if(is.null(selfing_generation)) rep(NA_integer_, n) else as.integer(selfing_generation)
+        
+        ped_out = new("pedigree", 
+            sire = sire, 
+            dam = dam, 
+            label = as.character(label),
+            generation = generation,
+            selfing_generation = selfing_gen,
+            expanded = rep(FALSE, n))
+        ped_out = getGeneration(ped_out)
+        return(ped_out)
+    }, error = function(e) {
+        # If validation still fails after editPed, throw an error
+        stop("Unable to create valid pedigree even after attempting to fix with editPed: ", e$message)
+    })
 }
 
 setAs("pedigree", "sparseMatrix", # representation as T^{-1}
@@ -46,11 +85,19 @@ setAs("pedigree", "sparseMatrix", # representation as T^{-1}
 		 uplo = "L", diag = "U"), "CsparseMatrix")
       })
 
+
+
 ## these data frames are now storage efficient but print less nicely
 setAs("pedigree", "data.frame",
       function(from)
-      data.frame(sire = from@sire, dam = from@dam,
-		 row.names = from@label))
+      data.frame(
+                 label = from@label,
+                 sire = from@sire, 
+                 dam = from@dam,
+                 generation = from@generation,
+                 selfing_generation = from@selfing_generation,
+                 expanded = from@expanded,
+                 stringsAsFactors = FALSE))
 
 #' @title Convert a pedigree to a data frame
 #'
@@ -71,15 +118,37 @@ ped2DF <- function(x) {
     stopifnot(is(x, "pedigree"))
     lab <- x@label
     lev <- seq_along(lab)
-    ans <- data.frame(sire = factor(x@sire, levels = lev, labels = lab),
+    ans <- data.frame(
+                      label = lab,
+                      sire = factor(x@sire, levels = lev, labels = lab),
                       dam  = factor(x@dam,  levels = lev, labels = lab),
-                      row.names = lab)
+                      generation = x@generation,
+                      selfing_generation = x@selfing_generation,
+                      expanded = x@expanded,
+                      stringsAsFactors = FALSE)
     if (is(x, "pedinbred")) ans <- cbind(ans, F = x@F)
     ans
 }
 
 setMethod("show", signature(object = "pedigree"),
-	  function(object) print(ped2DF(object)))
+    function(object) {
+        df <- tryCatch({
+            ped2DF(object)
+        }, error = function(e) {
+            data.frame(
+                label = object@label,
+                sire = object@sire,
+                dam = object@dam,
+                generation = if(length(object@generation) == length(object@label)) object@generation else rep(NA, length(object@label)),
+                selfing_generation = object@selfing_generation,
+                expanded = object@expanded,
+                stringsAsFactors = FALSE
+            )
+        })
+        print(df)
+    }
+)
+
 
 setMethod("head", "pedigree", function(x, ...)
 	  do.call("head", list(x = ped2DF(x), ...)))
@@ -421,67 +490,23 @@ getAInv <- function(ped) {
 #' stopifnot(!any(abs(A - AExp) > .Machine$double.eps))
 #' stopifnot(Matrix::isSymmetric(A))
 getA <- function(ped, labs = NULL) {
+
+    L = relfactor(ped)
     if (is.null(labs)) {
         # A = LL' = R'R
         # crossprod() does X'X --> R'R
-        aMx <- Matrix::crossprod(getL(ped, labs = labs))
-        dimnames(aMx) <- list(ped@label, ped@label)
+        A <- Matrix::crossprod(L)
+        dimnames(A) <- list(ped@label, ped@label)
     } else {
-        aMX <- getASubset(ped = ped, labs = labs)
+        A <- Matrix::crossprod(L[, labs])
+        dimnames(A) <- list(labs, labs)
     }
-    aMx
+    A
 }
 
-#' @title Subset of additive relationship matrix
-#'
-#' @description Returns subset of the additive relationship matrix for the pedigree.
-#'
-#' @param ped \code{\link{pedigree}}
-#' @param labs a character vector or a factor giving individual labels to
-#'   which to restrict the relationship matrix and corresponding factor using
-#'   Colleau et al. (2002) algorithm. If \code{labs} is a factor then the levels
-#'   of the factor are used as the labels. Default is the complete set of
-#'   individuals in the pedigree.
-#'
-#' @references Colleau, J.-J. An indirect approach to the extensive calculation of
-#'   relationship coefficients. Genet Sel Evol 34, 409 (2002).
-#'   https://doi.org/10.1186/1297-9686-34-4-409
-#'
-#' @return matrix (\linkS4class{dsCMatrix} - symmetric sparse)
+#' @describeIn getA Additive relationship matrix
 #' @export
-#' @examples
-#' ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
-#'                 dam =  c(NA, NA, 2, NA, 3, 2),
-#'                 label = 1:6)
-#' (A <- getA(ped))
-#' (ASubset  <- A[4:6, 4:6])
-#' (ASubset2 <- getASubset(ped, labs = 4:6))
-#'
-#' (ASubset3  <- A[6:4, 6:4])
-#' (ASubset4 <- getASubset(ped, labs = 6:4))
-#'
-#' # Test for correctness
-#' stopifnot(!any(abs(ASubset - ASubset2) > .Machine$double.eps))
-#' stopifnot(!any(abs(ASubset3 - ASubset4) > .Machine$double.eps))
-#' stopifnot(Matrix::isSymmetric(ASubset2))
-#' stopifnot(Matrix::isSymmetric(ASubset4))
-getASubset <- function(ped, labs) {
-    stopifnot(is(ped, "pedigree"))
-    stopifnot(!missing(labs))
-    nLabs <- length(labs)
-    nInd <- length(ped@label)
-    # A x = y; if x is all 0s and a 1 in the k-th position then y is A[, k]
-    # inv(A) A x = inv(A) y
-    # inv(A) y = x; solve for y to get A[, k] - column
-    # inv(A) Y = X; solve for Y to get A[, k] - matrix
-    numLabs <- as.numeric(labs)
-    X <- Matrix::sparseMatrix(i = numLabs, j = 1:nLabs,
-                              x = 1, dims = c(nInd, nLabs)) # dgCMatrix (sparse)
-    ASubset <- Matrix::solve(getAInv(ped), X)[numLabs, ] # dgCMatrix (sparse)
-    ASubset <- as(ASubset, "symmetricMatrix") # dsCMatrix (sparse)
-    dimnames(ASubset) <- list(labs, labs)
-    ASubset
-}
+getASubset <- getA
 
 #' @title Counts number of generations of ancestors for one subject. Use recursion.
 #'
@@ -515,14 +540,12 @@ getGenAncestors <- function(ped, id, ngen = NULL) {
     parents <- parents[!is.na(parents)]
     np <- length(parents)
     if (np == 0) {
-        ped$generation[j] <-0
+        ped$generation[j] <- 0
         return(ped)
     }
     ## get the number of generations in parent number one
     tmpgenP1 <- ped$generation[ped$id == parents[1]]
     if (is.na(tmpgenP1)) {
-        #if ngen is not null, and not cero, ngen<- ngen-1
-        #if ngen is cero, do not call recurrsively anymore
         ped <- getGenAncestors(ped, parents[1])
         genP1  <- 1 + ped$generation[ped$id == parents[1]]
     } else {
@@ -540,9 +563,9 @@ getGenAncestors <- function(ped, id, ngen = NULL) {
         genP1 <- max(genP1, genP2)
     }
     ped$generation[j] <- genP1
-    ## print(paste('id:', id, ', gen:', genP1, ', row:', j))
     ped
 }
+
 
 #' @title Edits a disordered or incomplete pedigree
 #'
@@ -636,4 +659,139 @@ prunePed <- function(ped, selectVector, ngen = 2) {
   }
 
   return(as.data.frame(returnPed))
+}
+
+#' Get or Calculate Generation Numbers for a Pedigree
+#'
+#' This function retrieves or calculates the generation numbers for a pedigree object.
+#' If the generation information is not already stored in the pedigree object, it
+#' calculates it and updates the pedigree object.
+#'
+#' @param ped An object of class "pedigree"
+#'
+#' @return The updated pedigree object with the generation slot filled.
+#'
+#' @details This function first checks if generation information is already stored in the
+#'   pedigree object. If not, it calculates the generation numbers using `getGenAncestors`.
+#'   The calculated generation numbers are then stored in the pedigree object's generation slot.
+#'
+#' @seealso \code{\link{getGenAncestors}} for the underlying function used to calculate
+#'   generation numbers, \code{\link{ped2DF}} for converting a pedigree object to a data frame.
+#'
+#' @examples
+#' ped <- pedigree(sire = c(NA, NA, 1, 1, 4, 5),
+#'                 dam  = c(NA, NA, 2, NA, 3, 2),
+#'                 label = 1:6)
+#' ped <- getGeneration(ped)
+#' print(ped@generation)
+#'
+#' @export
+getGeneration <- function(ped) {
+    if (all(is.na(ped@generation))) {
+        ped_df <- ped2DF(ped)
+        ped_df$id <- seq_along(ped_df$label)
+        ped_df$generation <- NA_integer_
+        
+        # Function to recursively calculate generation
+        calcGen <- function(id) {
+            if (!is.na(ped_df$generation[id])) {
+                return(ped_df$generation[id])
+            }
+            
+            sire <- ped_df$sire[id]
+            dam <- ped_df$dam[id]
+            
+            if (is.na(sire) && is.na(dam)) {
+                gen <- 0
+            } else {
+                sire_gen <- if (!is.na(sire)) calcGen(which(ped_df$label == sire)) else -1
+                dam_gen <- if (!is.na(dam)) calcGen(which(ped_df$label == dam)) else -1
+                gen <- max(sire_gen, dam_gen) + 1
+            }
+            
+            ped_df$generation[id] <<- gen
+            return(gen)
+        }
+        
+        # Calculate generation for each individual
+        for (i in seq_along(ped_df$id)) {
+            calcGen(i)
+        }
+        
+        ped@generation <- as.integer(ped_df$generation)
+    }
+    return(ped)
+}
+
+
+#' Expand Pedigree to Account a pedigree object and expands it to account for selfing generations.
+#'
+#' @param ped An object of class "pedigree"
+#' @param sepChar Character used for expanded pedigree IDs (default: '-F')
+#' @param verbose Logical, whether to print progress (default: FALSE)
+#'
+#' @return A new pedigree object with expanded entries for selfing generations
+#'
+#' @export
+expandPedigreeSelfing <- function(ped, sepChar = '-F', verbose = FALSE) {
+    # Convert pedigree to data frame
+    PED <- ped2DF(ped)
+    
+    # Ensure sire and dam are character vectors, not factors
+    PED$sire <- as.character(PED$sire)
+    PED$dam <- as.character(PED$dam)
+    
+    # Extending the pedigree by adding selfing
+    newPED <- data.frame(label = character(), sire = character(), dam = character(), 
+                         generation = integer(), selfing_generation = integer(), 
+                         expanded = logical(), stringsAsFactors = FALSE)
+    row <- 0
+    
+    for(i in 1:nrow(PED)){
+        id <- PED$label[i]
+        cycles <- PED$selfing_generation[i]
+        
+        if(cycles == 0) {
+            # For individuals with no selfing, just add them as is
+            row <- row + 1
+            newPED[row, ] <- PED[i, ]
+            newPED$expanded[row] <- FALSE
+        } else {
+            # For individuals with selfing, add the base and selfing generations
+            for(j in 0:cycles){
+                row <- row + 1
+                if(j == cycles) {
+                    newPED[row, "label"] <- id  # Keep original ID for the highest selfing generation
+                    newPED$expanded[row] <- FALSE
+                } else {
+                    newPED[row, "label"] <- paste(id, j, sep = sepChar)
+                    newPED$expanded[row] <- TRUE
+                }
+                newPED[row, c("sire", "dam")] <- if(j == 0) PED[i, c("sire", "dam")] else rep(newPED[(row-1), "label"], 2)
+                newPED[row, "selfing_generation"] <- j
+            }
+        }
+        
+        # Update the id in the sire and dam columns for future references
+        PED$sire[PED$sire == id] <- id  # Use the original ID
+        PED$dam[PED$dam == id] <- id  # Use the original ID
+        
+        if (verbose) {
+            print(i)
+        }
+    }
+    
+    # Create new pedigree object
+    newPed <- new("pedigree", 
+                  sire = as.integer(factor(newPED$sire, levels = newPED$label)),
+                  dam = as.integer(factor(newPED$dam, levels = newPED$label)),
+                  label = newPED$label,
+                  generation = rep(NA_integer_, nrow(newPED)),  # Initialize generation with NAs
+                  selfing_generation = as.integer(newPED$selfing_generation),
+                  expanded = newPED$expanded)
+    
+    # Calculate and set the generation for the new pedigree
+    newPed <- getGeneration(newPed)
+    
+    return(newPed)
 }

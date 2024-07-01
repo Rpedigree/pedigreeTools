@@ -3,7 +3,7 @@ Version: 0.2
 Date: 2023-08-11
 Title: Versatile Functions for Working with Pedigrees
 Author: Ana I. Vazquez, Douglas M. Bates, Paulino Perez-Rodriguez, G. de los Campos, S. Avadhanam & Gregor Gorjanc
-Maintainer:  Paulino Perez Rodriguez <perpdgo@colpos.mx>
+Maintainer: Paulino Perez Rodriguez <perpdgo@colpos.mx>
 Description: Tools to sort, edit and prune pedigrees and to extract the inbreeding coefficients
     and the relationship matrix (includes code for pedigrees from self-pollinated species). 
     The use of pedigree data is central to genetics research within the animal and plant breeding communities to predict 
@@ -17,5 +17,5 @@ Imports:
 LazyLoad: yes
 License: GPL-3
 URL: https://github.com/Rpedigree/pedigreeTools/
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Encodig: UTF-8
