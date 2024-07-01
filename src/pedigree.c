@@ -177,6 +177,7 @@ SEXP pedigree_inbreeding(SEXP x)
  * @param dams SEXP (STRSXP) Vector of dam labels
  * @param selfing_generations SEXP (INTSXP) Vector of selfing generation numbers
  * @param sep_char SEXP (STRSXP) Separator character for expanded pedigree IDs
+ * @param verbose SEXP (STRSXP) print progress
  *
  * @return SEXP (VECSXP) A list containing:
  *         - labels: Expanded vector of labels
@@ -187,10 +188,11 @@ SEXP pedigree_inbreeding(SEXP x)
  *         - expanded: Logical vector indicating if each entry is an expansion
  *
  */
-SEXP expand_pedigree_selfing(SEXP labels, SEXP sires, SEXP dams, SEXP selfing_generations, SEXP sep_char) {
+SEXP expand_pedigree_selfing(SEXP labels, SEXP sires, SEXP dams, SEXP selfing_generations, SEXP sep_char, SEXP verbose) {
     int n = LENGTH(labels);
     int total_rows = 0;
     int *sg = INTEGER(selfing_generations);
+    int show_progress = asLogical(verbose);
     
     // Calculate total number of rows in expanded pedigree
     for (int i = 0; i < n; i++) {
@@ -210,7 +212,13 @@ SEXP expand_pedigree_selfing(SEXP labels, SEXP sires, SEXP dams, SEXP selfing_ge
     int row = 0;
     char buffer[256];  // Adjust buffer size as needed
     
+    if (show_progress) {
+        R_FlushConsole();
+    }
+    
     for (int i = 0; i < n; i++) {
+        // Update progress
+        if (show_progress) print_progress_bar(i + 1, n, 50);
         const char* id = CHAR(STRING_ELT(labels, i));
         int cycles = sg[i];
         
@@ -247,9 +255,31 @@ SEXP expand_pedigree_selfing(SEXP labels, SEXP sires, SEXP dams, SEXP selfing_ge
                 row++;
             }
         }
+        
+    }
+    
+    if (show_progress) {
+		Rprintf("\n");
+        R_FlushConsole();
     }
     
     UNPROTECT(1);
     return result;
 }
 
+// for printing progress in c functions
+void print_progress_bar(int current, int total, int bar_width) {
+    float progress = (float)current / total;
+    int filled_width = (int)(bar_width * progress);
+
+    Rprintf("\r[");
+    for (int i = 0; i < bar_width; ++i) {
+        if (i < filled_width) {
+            Rprintf("=");
+        } else {
+            Rprintf(" ");
+        }
+    }
+    Rprintf("] %.1f%%", progress * 100);
+    R_FlushConsole();
+}

@@ -745,14 +745,15 @@ expandPedigreeSelfing <- function(ped, sepChar = '-F', verbose = FALSE) {
     PED$sire <- as.character(PED$sire)
     PED$dam <- as.character(PED$dam)
 
-        # Call the C function
+    # Call the C function
     result <- .Call(expand_pedigree_selfing, 
                     PED$label, 
                     PED$sire, 
                     PED$dam, 
                     PED$selfing_generation, 
-                    sepChar)
-
+                    sepChar,
+                    verbose)
+    
     # Convert the result to a data frame
     newPED <- data.frame(
         label = result[[1]],
