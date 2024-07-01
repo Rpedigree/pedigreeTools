@@ -188,7 +188,6 @@ SEXP pedigree_inbreeding(SEXP x)
  *
  */
 SEXP expand_pedigree_selfing(SEXP labels, SEXP sires, SEXP dams, SEXP selfing_generations, SEXP sep_char) {
-	Rprintf("Debug: Entered C function\n");
     int n = LENGTH(labels);
     int total_rows = 0;
     int *sg = INTEGER(selfing_generations);

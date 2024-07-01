@@ -746,25 +746,12 @@ expandPedigreeSelfing <- function(ped, sepChar = '-F', verbose = FALSE) {
     PED$dam <- as.character(PED$dam)
 
         # Call the C function
-    tryCatch({
-        result <- .Call("expand_pedigree_selfing", 
-                        PED$label, 
-                        PED$sire, 
-                        PED$dam, 
-                        PED$selfing_generation, 
-                        sepChar)
-        print("Debug: C function call successful")
-    }, error = function(e) {
-        print(paste("Error in .Call:", e$message))
-        print("Debug: Attempting to load DLL manually")
-        dyn.load(system.file(package="pedigreeTools", "libs", .Platform$r_arch, "pedigreeTools.so"))
-        result <- .Call("expand_pedigree_selfing", 
-                        PED$label, 
-                        PED$sire, 
-                        PED$dam, 
-                        PED$selfing_generation, 
-                        sepChar)
-    })
+    result <- .Call(expand_pedigree_selfing, 
+                    PED$label, 
+                    PED$sire, 
+                    PED$dam, 
+                    PED$selfing_generation, 
+                    sepChar)
 
     # Convert the result to a data frame
     newPED <- data.frame(
