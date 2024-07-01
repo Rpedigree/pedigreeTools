@@ -21,10 +21,6 @@
 pedigree <- function(sire, dam, label, selfing_generation = NULL) {
     n <- length(sire)
     labelex <- c(label, NA, 0)
-    stopifnot(n == length(dam),
-              n == length(label),
-              all(sire %in% labelex),
-              all(dam %in% labelex))
     
     if (!is.null(selfing_generation)) {
         stopifnot(n == length(selfing_generation),
