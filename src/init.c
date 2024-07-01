@@ -1,21 +1,22 @@
-#include "pedigree.h"
+#include <R.h>
+#include <Rinternals.h>
 #include <R_ext/Rdynload.h>
-static R_CallMethodDef CallEntries[] = {
+#include <R_ext/Print.h>
+#include "pedigree.h"
+
+SEXP expand_pedigree_selfing(SEXP, SEXP, SEXP, SEXP, SEXP);
+
+static const R_CallMethodDef CallEntries[] = {
     {"pedigree_chol", (DL_FUNC) &pedigree_chol, 2},
     {"pedigree_inbreeding", (DL_FUNC) &pedigree_inbreeding, 1},
+    {"expand_pedigree_selfing", (DL_FUNC) &expand_pedigree_selfing, 5},
     {NULL, NULL, 0}
 };
 
-/** Initializer for the pedigreeTools package.
- *
- *  Register routines that can be called directly from R.
- */
-#ifdef HAVE_VISIBILITY_ATTRIBUTE
-__attribute__ ((visibility ("default")))
-#endif
-void R_init_pedigreemm(DllInfo *dll)
-{
+
+void R_init_pedigreeTools(DllInfo *dll) {
+    Rprintf("Debug: Initializing pedigreeTools\n");
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
+    R_forceSymbols(dll, TRUE);
 }
-

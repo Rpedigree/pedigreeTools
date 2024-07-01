@@ -1,3 +1,6 @@
+#' @useDynLib pedigreeTools, .registration = TRUE
+NULL
+
 #' @title Constructor for pedigree objects
 #'
 #' @description A simple constructor for a pedigree object. The main point for
@@ -741,63 +744,45 @@ expandPedigreeSelfing <- function(ped, sepChar = '-F', verbose = FALSE) {
     # Ensure sire and dam are character vectors, not factors
     PED$sire <- as.character(PED$sire)
     PED$dam <- as.character(PED$dam)
-    
-    # Extending the pedigree by adding selfing
-    newPED <- data.frame(label = character(), sire = character(), dam = character(), 
-                         generation = integer(), selfing_generation = integer(), 
-                         expanded = logical(), stringsAsFactors = FALSE)
-    row <- 0
-    
-    # Create a progress bar if verbose is TRUE
-    if (verbose) {
-        pb <- txtProgressBar(min = 0, max = nrow(PED), style = 3)
-    }
-    
-    for(i in 1:nrow(PED)){
-        id <- PED$label[i]
-        cycles <- PED$selfing_generation[i]
-        
-        if(cycles == 0) {
-            # For individuals with no selfing, just add them as is
-            row <- row + 1
-            newPED[row, ] <- PED[i, ]
-            newPED$expanded[row] <- FALSE
-        } else {
-            # For individuals with selfing, add the base and selfing generations
-            for(j in 0:cycles){
-                row <- row + 1
-                if(j == cycles) {
-                    newPED[row, "label"] <- id  # Keep original ID for the highest selfing generation
-                    newPED$expanded[row] <- FALSE
-                } else {
-                    newPED[row, "label"] <- paste(id, j, sep = sepChar)
-                    newPED$expanded[row] <- TRUE
-                }
-                newPED[row, c("sire", "dam")] <- if(j == 0) PED[i, c("sire", "dam")] else rep(newPED[(row-1), "label"], 2)
-                newPED[row, "selfing_generation"] <- j
-            }
-        }
-        
-        # Update the id in the sire and dam columns for future references
-        PED$sire[PED$sire == id] <- id  # Use the original ID
-        PED$dam[PED$dam == id] <- id  # Use the original ID
-        
-        if (verbose) {
-            setTxtProgressBar(pb, i)
-        }
-    }
-    
-    # Close the progress bar if it was created
-    if (verbose) {
-        close(pb)
-    }
+
+        # Call the C function
+    tryCatch({
+        result <- .Call("expand_pedigree_selfing", 
+                        PED$label, 
+                        PED$sire, 
+                        PED$dam, 
+                        PED$selfing_generation, 
+                        sepChar)
+        print("Debug: C function call successful")
+    }, error = function(e) {
+        print(paste("Error in .Call:", e$message))
+        print("Debug: Attempting to load DLL manually")
+        dyn.load(system.file(package="pedigreeTools", "libs", .Platform$r_arch, "pedigreeTools.so"))
+        result <- .Call("expand_pedigree_selfing", 
+                        PED$label, 
+                        PED$sire, 
+                        PED$dam, 
+                        PED$selfing_generation, 
+                        sepChar)
+    })
+
+    # Convert the result to a data frame
+    newPED <- data.frame(
+        label = result[[1]],
+        sire = result[[2]],
+        dam = result[[3]],
+        generation = result[[4]],
+        selfing_generation = result[[5]],
+        expanded = result[[6]],
+        stringsAsFactors = FALSE
+    )
     
     # Create new pedigree object
     newPed <- new("pedigree", 
                   sire = as.integer(factor(newPED$sire, levels = newPED$label)),
                   dam = as.integer(factor(newPED$dam, levels = newPED$label)),
                   label = newPED$label,
-                  generation = rep(NA_integer_, nrow(newPED)),  # Initialize generation with NAs
+                  generation = newPED$generation,
                   selfing_generation = as.integer(newPED$selfing_generation),
                   expanded = newPED$expanded)
     

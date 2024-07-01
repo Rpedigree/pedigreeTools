@@ -8,5 +8,7 @@
 
 SEXP pedigree_chol(SEXP x, SEXP ans);
 SEXP pedigree_inbreeding(SEXP x);
+SEXP expand_pedigree_selfing(SEXP labels, SEXP sires, SEXP dams, SEXP selfing_generations, SEXP sep_char);
+
 
 #endif /* PEDIGREE_H */

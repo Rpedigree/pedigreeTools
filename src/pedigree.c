@@ -1,4 +1,5 @@
 #include "pedigree.h"
+#include <string.h>
 
 #ifdef ENABLE_NLS		/** Allow for translation of error messages */
 #include <libintl.h>
@@ -163,5 +164,93 @@ SEXP pedigree_inbreeding(SEXP x)
     Free(F); Free(L); Free(B); Free(Anc); Free(LAP); Free(SI); Free(MI);
     UNPROTECT(1);
     return ans;
+}
+
+/**
+ * @title Expand Pedigree for Selfing Generations
+ * 
+ * @description This function expands a pedigree to account for selfing generations.
+ * It creates new entries for each selfing generation of an individual.
+ *
+ * @param labels SEXP (STRSXP) Vector of individual labels
+ * @param sires SEXP (STRSXP) Vector of sire labels
+ * @param dams SEXP (STRSXP) Vector of dam labels
+ * @param selfing_generations SEXP (INTSXP) Vector of selfing generation numbers
+ * @param sep_char SEXP (STRSXP) Separator character for expanded pedigree IDs
+ *
+ * @return SEXP (VECSXP) A list containing:
+ *         - labels: Expanded vector of labels
+ *         - sires: Expanded vector of sire labels
+ *         - dams: Expanded vector of dam labels
+ *         - generations: Vector of generation numbers (all NA)
+ *         - selfing_generations: Expanded vector of selfing generation numbers
+ *         - expanded: Logical vector indicating if each entry is an expansion
+ *
+ */
+SEXP expand_pedigree_selfing(SEXP labels, SEXP sires, SEXP dams, SEXP selfing_generations, SEXP sep_char) {
+	Rprintf("Debug: Entered C function\n");
+    int n = LENGTH(labels);
+    int total_rows = 0;
+    int *sg = INTEGER(selfing_generations);
+    
+    // Calculate total number of rows in expanded pedigree
+    for (int i = 0; i < n; i++) {
+        total_rows += (sg[i] == 0) ? 1 : (sg[i] + 1);
+    }
+    
+    // Allocate memory for result
+    SEXP result = PROTECT(allocVector(VECSXP, 6));
+    SET_VECTOR_ELT(result, 0, allocVector(STRSXP, total_rows));  // label
+    SET_VECTOR_ELT(result, 1, allocVector(STRSXP, total_rows));  // sire
+    SET_VECTOR_ELT(result, 2, allocVector(STRSXP, total_rows));  // dam
+    SET_VECTOR_ELT(result, 3, allocVector(INTSXP, total_rows));  // generation
+    SET_VECTOR_ELT(result, 4, allocVector(INTSXP, total_rows));  // selfing_generation
+    SET_VECTOR_ELT(result, 5, allocVector(LGLSXP, total_rows));  // expanded
+    
+    const char* sep = CHAR(STRING_ELT(sep_char, 0));
+    int row = 0;
+    char buffer[256];  // Adjust buffer size as needed
+    
+    for (int i = 0; i < n; i++) {
+        const char* id = CHAR(STRING_ELT(labels, i));
+        int cycles = sg[i];
+        
+        if (cycles == 0) {
+            SET_STRING_ELT(VECTOR_ELT(result, 0), row, STRING_ELT(labels, i));
+            SET_STRING_ELT(VECTOR_ELT(result, 1), row, STRING_ELT(sires, i));
+            SET_STRING_ELT(VECTOR_ELT(result, 2), row, STRING_ELT(dams, i));
+            INTEGER(VECTOR_ELT(result, 3))[row] = NA_INTEGER;
+            INTEGER(VECTOR_ELT(result, 4))[row] = 0;
+            LOGICAL(VECTOR_ELT(result, 5))[row] = FALSE;
+            row++;
+        } else {
+            for (int j = 0; j <= cycles; j++) {
+                if (j == cycles) {
+                    SET_STRING_ELT(VECTOR_ELT(result, 0), row, STRING_ELT(labels, i));
+                    LOGICAL(VECTOR_ELT(result, 5))[row] = FALSE;
+                } else {
+                    snprintf(buffer, sizeof(buffer), "%s%s%d", id, sep, j);
+                    SET_STRING_ELT(VECTOR_ELT(result, 0), row, mkChar(buffer));
+                    LOGICAL(VECTOR_ELT(result, 5))[row] = TRUE;
+                }
+                
+                if (j == 0) {
+                    SET_STRING_ELT(VECTOR_ELT(result, 1), row, STRING_ELT(sires, i));
+                    SET_STRING_ELT(VECTOR_ELT(result, 2), row, STRING_ELT(dams, i));
+                } else {
+                    snprintf(buffer, sizeof(buffer), "%s%s%d", id, sep, j-1);
+                    SET_STRING_ELT(VECTOR_ELT(result, 1), row, mkChar(buffer));
+                    SET_STRING_ELT(VECTOR_ELT(result, 2), row, mkChar(buffer));
+                }
+                
+                INTEGER(VECTOR_ELT(result, 3))[row] = NA_INTEGER;
+                INTEGER(VECTOR_ELT(result, 4))[row] = j;
+                row++;
+            }
+        }
+    }
+    
+    UNPROTECT(1);
+    return result;
 }
 
