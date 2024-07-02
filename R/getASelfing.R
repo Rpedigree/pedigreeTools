@@ -4,7 +4,6 @@
 #' @param Par1 vector of IDs of one of the parents
 #' @param Par2 vector of IDs of the other parent
 #' @param nCycles vector that indicates number of selfing cycles for each individual.
-#' @param nCyclesDefault default value of nCycles
 #' @param sepChar character, used for expanded pedigree IDs
 #' @param verbose logical, print progress
 #' @param fileNewPed Output csv file (comma separated value) with columns 'label', 'sire', 'dam', with the full pull pedigree expanded taking into account the selfing cycles
