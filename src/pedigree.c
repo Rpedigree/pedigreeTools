@@ -189,7 +189,16 @@ SEXP pedigree_inbreeding(SEXP x)
 static void calc_gen(int id, int *sire_ptr, int *dam_ptr, int *gen_ptr, int n);
 
 SEXP get_generation(SEXP sire, SEXP dam, SEXP label) {
+    // Input validation
+    if (TYPEOF(sire) != INTSXP || TYPEOF(dam) != INTSXP || TYPEOF(label) != STRSXP) {
+        error("Invalid input types");
+    }
+    
     int n = LENGTH(sire);
+    if (n != LENGTH(dam) || n != LENGTH(label)) {
+        error("Input vectors must have the same length");
+    }
+    
     int *sire_ptr = INTEGER(sire);
     int *dam_ptr = INTEGER(dam);
     SEXP generation = PROTECT(allocVector(INTSXP, n));
@@ -209,8 +218,11 @@ SEXP get_generation(SEXP sire, SEXP dam, SEXP label) {
     return generation;
 }
 
-// Helper function definition
 static void calc_gen(int id, int *sire_ptr, int *dam_ptr, int *gen_ptr, int n) {
+    if (id < 0 || id >= n) {
+        error("Invalid id");
+    }
+    
     if (gen_ptr[id] != -1) return;  // Already calculated
     
     int sire_id = sire_ptr[id] - 1;  // R indices are 1-based
@@ -220,11 +232,11 @@ static void calc_gen(int id, int *sire_ptr, int *dam_ptr, int *gen_ptr, int n) {
         gen_ptr[id] = 0;
     } else {
         int sire_gen = -1, dam_gen = -1;
-        if (sire_id != -1 && sire_id < n) {
+        if (sire_id >= 0 && sire_id < n) {
             calc_gen(sire_id, sire_ptr, dam_ptr, gen_ptr, n);
             sire_gen = gen_ptr[sire_id];
         }
-        if (dam_id != -1 && dam_id < n) {
+        if (dam_id >= 0 && dam_id < n) {
             calc_gen(dam_id, sire_ptr, dam_ptr, gen_ptr, n);
             dam_gen = gen_ptr[dam_id];
         }
@@ -255,6 +267,9 @@ static void calc_gen(int id, int *sire_ptr, int *dam_ptr, int *gen_ptr, int n) {
  *         - expanded: Logical vector indicating if each entry is an expansion
  *
  */
+
+void print_progress_bar(int current, int total, int bar_width);
+
 SEXP expand_pedigree_selfing(SEXP labels, SEXP sires, SEXP dams, SEXP selfing_generations, SEXP sep_char, SEXP verbose) {
     int n = LENGTH(labels);
     int total_rows = 0;
