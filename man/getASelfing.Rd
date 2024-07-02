@@ -33,8 +33,6 @@ getASelfing(
 \item{fileNewPed}{Output csv file (comma separated value) with columns 'label', 'sire', 'dam', with the full pull pedigree expanded taking into account the selfing cycles}
 
 \item{computeA}{Indicates if the A matrix is to be computed}
-
-\item{nCyclesDefault}{default value of nCycles}
 }
 \value{
 Returns A matrix computed for the extended pedigree if computeA=TRUE
