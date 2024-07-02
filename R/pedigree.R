@@ -77,7 +77,8 @@ pedigree <- function(sire, dam, label, selfing_generation = NULL) {
         
         # Map the original selfing_generation to the new order
         selfing_generation_tmp <- rep(0, nrow(fixed_ped))
-        selfing_generation_tmp[match(fixed_ped$label, label)] <- selfing_generation
+        selfing_generation_tmp[match(label, fixed_ped$label)] <- selfing_generation
+        selfing_generation = selfing_generation_tmp
         
         sire <- as.integer(factor(fixed_ped$sire, levels = fixed_ped$label))
         dam <- as.integer(factor(fixed_ped$dam, levels = fixed_ped$label))
@@ -89,7 +90,7 @@ pedigree <- function(sire, dam, label, selfing_generation = NULL) {
             dam = dam, 
             label = as.character(fixed_ped$label),
             generation = as.integer(fixed_ped$generation),
-            selfing_generation = as.integer(selfing_generation_tmp),
+            selfing_generation = as.integer(selfing_generation),
             expanded = rep(FALSE, nrow(fixed_ped)))
         
         ped_out <- getGeneration(ped_out)
