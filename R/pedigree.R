@@ -58,7 +58,7 @@ pedigree <- function(sire, dam, label, selfing_generation = NULL) {
         sire[sire < 1 | sire > n] <- NA
         dam[dam < 1 | dam > n] <- NA
         
-        # Initialize generation and selfing_generation with NAs
+        # Initialize generation with NAs
         generation <- rep(NA_integer_, n)
         
         ped_out = new("pedigree", 
@@ -71,10 +71,32 @@ pedigree <- function(sire, dam, label, selfing_generation = NULL) {
         ped_out = getGeneration(ped_out)
         return(ped_out)
     }, error = function(e) {
-        # If validation still fails after editPed, throw an error
-        stop("Unable to create valid pedigree even after attempting to fix with editPed: ", e$message)
+        # If validation fails, try using editPed
+        message("Initial pedigree creation failed. Attempting to fix with editPed...")
+        fixed_ped <- editPed(sire = sire, dam = dam, label = label)
+        
+        # Map the original selfing_generation to the new order
+        selfing_generation_tmp <- rep(0, nrow(fixed_ped))
+        selfing_generation_tmp[match(fixed_ped$label, label)] <- selfing_generation
+        
+        sire <- as.integer(factor(fixed_ped$sire, levels = fixed_ped$label))
+        dam <- as.integer(factor(fixed_ped$dam, levels = fixed_ped$label))
+        sire[sire < 1 | sire > nrow(fixed_ped)] <- NA
+        dam[dam < 1 | dam > nrow(fixed_ped)] <- NA
+        
+        ped_out <- new("pedigree", 
+            sire = sire, 
+            dam = dam, 
+            label = as.character(fixed_ped$label),
+            generation = as.integer(fixed_ped$generation),
+            selfing_generation = as.integer(selfing_generation_tmp),
+            expanded = rep(FALSE, nrow(fixed_ped)))
+        
+        ped_out <- getGeneration(ped_out)
+        return(ped_out)
     })
 }
+
 
 setAs("pedigree", "sparseMatrix", # representation as T^{-1}
       function(from) {
