@@ -295,7 +295,13 @@ getDInv <- function(ped, vector = TRUE) {
 #' stopifnot(is(TInv, "sparseMatrix"))
 getTInv <- function(ped) {
     stopifnot(is(ped, "pedigree"))
-    TInv <- as(ped, "sparseMatrix")
+    df=data.frame(sire=as.numeric(ped@sire),
+		  dam=as.numeric(ped@dam),
+		  label=as.numeric(ped@label),
+		  generation=as.numeric(ped@generation),
+		  selfing_generation=as.numeric(ped@selfing_generation))
+    df=Matrix(df,sparse = TRUE)
+    TInv <- as(df, "sparseMatrix")
     dimnames(TInv) <- list(ped@label, ped@label)
     TInv
 }
