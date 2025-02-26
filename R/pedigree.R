@@ -112,6 +112,20 @@ setAs("pedigree", "sparseMatrix", # representation as T^{-1}
 		 uplo = "L", diag = "U"), "CsparseMatrix")
       })
 
+#' @export   
+convert_ped2sparse = function(from) {
+	sire <- from@sire
+	n <- length(sire)
+	animal <- seq_along(sire)
+	j <- c(sire, from@dam)
+	ind <- !is.na(j)
+	as(new("dtTMatrix", i = rep.int(animal, 2)[ind] - 1L,
+	     j = j[ind] - 1L, x = rep.int(-0.5, sum(ind)),
+	     Dim = c(n,n), Dimnames = list(from@label, NULL),
+	     uplo = "L", diag = "U"), "CsparseMatrix")
+}
+	
+
 
 
 ## these data frames are now storage efficient but print less nicely
@@ -127,6 +141,20 @@ setAs("pedigree", "data.frame",
                  selfing_generation = from@selfing_generation,
                  expanded = from@expanded,
                  stringsAsFactors = FALSE))
+
+## these data frames are now storage efficient but print less nicely
+#' @name pedigree
+#' @export      
+convert_ped2dataframe = function(from){
+      data.frame(
+                 label = from@label,
+                 sire = from@sire, 
+                 dam = from@dam,
+                 generation = from@generation,
+                 selfing_generation = from@selfing_generation,
+                 expanded = from@expanded,
+                 stringsAsFactors = FALSE)
+	}
 
 #' @title Convert a pedigree to a data frame
 #'
@@ -301,7 +329,7 @@ getDInv <- function(ped, vector = TRUE) {
 #' stopifnot(is(TInv, "sparseMatrix"))
 getTInv <- function(ped) {
     stopifnot(is(ped, "pedigree"))
-    TInv <- as(ped, "sparseMatrix")
+    TInv <- convert_ped2sparse(ped)
     dimnames(TInv) <- list(ped@label, ped@label)
     TInv
 }
