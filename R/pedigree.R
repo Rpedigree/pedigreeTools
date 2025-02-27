@@ -98,25 +98,53 @@ pedigree <- function(sire, dam, label, selfing_generation = NULL) {
     })
 }
 
+# setAs("pedigree", "sparseMatrix", # representation as T^{-1}
+#      function(from) {
+#	  sire <- from@sire
+#	  n <- length(sire)
+#	  animal <- seq_along(sire)
+#	  j <- c(sire, from@dam)
+#	  ind <- !is.na(j)
+#	  as(new("dtTMatrix", i = rep.int(animal, 2)[ind] - 1L,
+#		 j = j[ind] - 1L, x = rep.int(-0.5, sum(ind)),
+#		 Dim = c(n,n), Dimnames = list(from@label, NULL),
+#		 uplo = "L", diag = "U"), "CsparseMatrix")
+#     })
 
-setAs("pedigree", "sparseMatrix", # representation as T^{-1}
-      function(from) {
-	  sire <- from@sire
-	  n <- length(sire)
-	  animal <- seq_along(sire)
-	  j <- c(sire, from@dam)
-	  ind <- !is.na(j)
-	  as(new("dtTMatrix", i = rep.int(animal, 2)[ind] - 1L,
-		 j = j[ind] - 1L, x = rep.int(-0.5, sum(ind)),
-		 Dim = c(n,n), Dimnames = list(from@label, NULL),
-		 uplo = "L", diag = "U"), "CsparseMatrix")
-      })
+#' @export   
+convert_ped2sparse = function(from) {
+	sire <- from@sire
+	n <- length(sire)
+	animal <- seq_along(sire)
+	j <- c(sire, from@dam)
+	ind <- !is.na(j)
+	as(new("dtTMatrix", i = rep.int(animal, 2)[ind] - 1L,
+	     j = j[ind] - 1L, x = rep.int(-0.5, sum(ind)),
+	     Dim = c(n,n), Dimnames = list(from@label, NULL),
+	     uplo = "L", diag = "U"), "CsparseMatrix")
+}
+	
 
 
 
 ## these data frames are now storage efficient but print less nicely
-setAs("pedigree", "data.frame",
-      function(from)
+#' @name pedigree
+#' @export      
+# setAs("pedigree", "data.frame",
+#      function(from)
+#      data.frame(
+#                 label = from@label,
+#                 sire = from@sire, 
+#                 dam = from@dam,
+#                 generation = from@generation,
+#                 selfing_generation = from@selfing_generation,
+#                 expanded = from@expanded,
+#                 stringsAsFactors = FALSE))
+
+## these data frames are now storage efficient but print less nicely
+#' @name pedigree
+#' @export      
+convert_ped2dataframe = function(from){
       data.frame(
                  label = from@label,
                  sire = from@sire, 
@@ -124,7 +152,8 @@ setAs("pedigree", "data.frame",
                  generation = from@generation,
                  selfing_generation = from@selfing_generation,
                  expanded = from@expanded,
-                 stringsAsFactors = FALSE))
+                 stringsAsFactors = FALSE)
+	}
 
 #' @title Convert a pedigree to a data frame
 #'
@@ -157,6 +186,8 @@ ped2DF <- function(x) {
     ans
 }
 
+#' @name pedigree
+#' @export      
 setMethod("show", signature(object = "pedigree"),
     function(object) {
         df <- tryCatch({
@@ -176,14 +207,16 @@ setMethod("show", signature(object = "pedigree"),
     }
 )
 
-
+#' @export    
 setMethod("head", "pedigree", function(x, ...)
 	  do.call("head", list(x = ped2DF(x), ...)))
 
+#' @export    
 setMethod("tail", "pedigree", function(x, ...)
 	  do.call("tail", list(x = ped2DF(x), ...)))
 
 #' @useDynLib pedigreeTools pedigree_chol
+#' @export    
 setMethod("chol", "pedigree",
           function(x, pivot, LINPACK) {
               ttrans <- Matrix::solve(Matrix::t(as(x, "dtCMatrix")))
@@ -295,7 +328,7 @@ getDInv <- function(ped, vector = TRUE) {
 #' stopifnot(is(TInv, "sparseMatrix"))
 getTInv <- function(ped) {
     stopifnot(is(ped, "pedigree"))
-    TInv <- as(ped, "sparseMatrix")
+    TInv <- convert_ped2sparse(ped)
     dimnames(TInv) <- list(ped@label, ped@label)
     TInv
 }
