@@ -98,19 +98,18 @@ pedigree <- function(sire, dam, label, selfing_generation = NULL) {
     })
 }
 
-#' @export    
-setAs("pedigree", "sparseMatrix", # representation as T^{-1}
-      function(from) {
-	  sire <- from@sire
-	  n <- length(sire)
-	  animal <- seq_along(sire)
-	  j <- c(sire, from@dam)
-	  ind <- !is.na(j)
-	  as(new("dtTMatrix", i = rep.int(animal, 2)[ind] - 1L,
-		 j = j[ind] - 1L, x = rep.int(-0.5, sum(ind)),
-		 Dim = c(n,n), Dimnames = list(from@label, NULL),
-		 uplo = "L", diag = "U"), "CsparseMatrix")
-      })
+# setAs("pedigree", "sparseMatrix", # representation as T^{-1}
+#      function(from) {
+#	  sire <- from@sire
+#	  n <- length(sire)
+#	  animal <- seq_along(sire)
+#	  j <- c(sire, from@dam)
+#	  ind <- !is.na(j)
+#	  as(new("dtTMatrix", i = rep.int(animal, 2)[ind] - 1L,
+#		 j = j[ind] - 1L, x = rep.int(-0.5, sum(ind)),
+#		 Dim = c(n,n), Dimnames = list(from@label, NULL),
+#		 uplo = "L", diag = "U"), "CsparseMatrix")
+#     })
 
 #' @export   
 convert_ped2sparse = function(from) {
@@ -131,16 +130,16 @@ convert_ped2sparse = function(from) {
 ## these data frames are now storage efficient but print less nicely
 #' @name pedigree
 #' @export      
-setAs("pedigree", "data.frame",
-      function(from)
-      data.frame(
-                 label = from@label,
-                 sire = from@sire, 
-                 dam = from@dam,
-                 generation = from@generation,
-                 selfing_generation = from@selfing_generation,
-                 expanded = from@expanded,
-                 stringsAsFactors = FALSE))
+# setAs("pedigree", "data.frame",
+#      function(from)
+#      data.frame(
+#                 label = from@label,
+#                 sire = from@sire, 
+#                 dam = from@dam,
+#                 generation = from@generation,
+#                 selfing_generation = from@selfing_generation,
+#                 expanded = from@expanded,
+#                 stringsAsFactors = FALSE))
 
 ## these data frames are now storage efficient but print less nicely
 #' @name pedigree
