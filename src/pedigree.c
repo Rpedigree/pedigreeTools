@@ -1,4 +1,5 @@
 #include "pedigree.h"
+#include <string.h>
 
 #ifdef ENABLE_NLS		/** Allow for translation of error messages */
 #include <libintl.h>
@@ -165,3 +166,202 @@ SEXP pedigree_inbreeding(SEXP x)
     return ans;
 }
 
+/**
+ * @title Calculate Generation Numbers for a Pedigree
+ *
+ * @description This function calculates the generation numbers for a pedigree.
+ * It uses a recursive approach to determine the generation of each individual.
+ *
+ * @param sire SEXP (INTSXP) Vector of sire indices
+ * @param dam SEXP (INTSXP) Vector of dam indices
+ * @param label SEXP (STRSXP) Vector of individual labels (not used in calculation, but included for consistency)
+ *
+ * @return SEXP (INTSXP) A vector of generation numbers
+ *
+ * @details The generation of an individual is defined as one more than the maximum
+ * generation of its parents. Individuals with no parents (founders) are assigned
+ * generation 0. The function uses -1 as a placeholder for 'not yet calculated'
+ * during the recursive process.
+ *
+ */
+
+// Helper function declaration
+static void calc_gen(int id, int *sire_ptr, int *dam_ptr, int *gen_ptr, int n);
+
+SEXP get_generation(SEXP sire, SEXP dam, SEXP label) {
+    // Input validation
+    if (TYPEOF(sire) != INTSXP || TYPEOF(dam) != INTSXP || TYPEOF(label) != STRSXP) {
+        error("Invalid input types");
+    }
+    
+    int n = LENGTH(sire);
+    if (n != LENGTH(dam) || n != LENGTH(label)) {
+        error("Input vectors must have the same length");
+    }
+    
+    int *sire_ptr = INTEGER(sire);
+    int *dam_ptr = INTEGER(dam);
+    SEXP generation = PROTECT(allocVector(INTSXP, n));
+    int *gen_ptr = INTEGER(generation);
+    
+    // Initialize all generations to -1 (not calculated)
+    for (int i = 0; i < n; i++) {
+        gen_ptr[i] = -1;
+    }
+
+    // Calculate generation for each individual
+    for (int i = 0; i < n; i++) {
+        calc_gen(i, sire_ptr, dam_ptr, gen_ptr, n);
+    }
+
+    UNPROTECT(1);
+    return generation;
+}
+
+static void calc_gen(int id, int *sire_ptr, int *dam_ptr, int *gen_ptr, int n) {
+    if (id < 0 || id >= n) {
+        error("Invalid id");
+    }
+    
+    if (gen_ptr[id] != -1) return;  // Already calculated
+    
+    int sire_id = sire_ptr[id] - 1;  // R indices are 1-based
+    int dam_id = dam_ptr[id] - 1;
+    
+    if (sire_id == -1 && dam_id == -1) {
+        gen_ptr[id] = 0;
+    } else {
+        int sire_gen = -1, dam_gen = -1;
+        if (sire_id >= 0 && sire_id < n) {
+            calc_gen(sire_id, sire_ptr, dam_ptr, gen_ptr, n);
+            sire_gen = gen_ptr[sire_id];
+        }
+        if (dam_id >= 0 && dam_id < n) {
+            calc_gen(dam_id, sire_ptr, dam_ptr, gen_ptr, n);
+            dam_gen = gen_ptr[dam_id];
+        }
+        gen_ptr[id] = (sire_gen > dam_gen ? sire_gen : dam_gen) + 1;
+    }
+}
+
+
+/**
+ * @title Expand Pedigree for Selfing Generations
+ * 
+ * @description This function expands a pedigree to account for selfing generations.
+ * It creates new entries for each selfing generation of an individual.
+ *
+ * @param labels SEXP (STRSXP) Vector of individual labels
+ * @param sires SEXP (STRSXP) Vector of sire labels
+ * @param dams SEXP (STRSXP) Vector of dam labels
+ * @param selfing_generations SEXP (INTSXP) Vector of selfing generation numbers
+ * @param sep_char SEXP (STRSXP) Separator character for expanded pedigree IDs
+ * @param verbose SEXP (STRSXP) print progress
+ *
+ * @return SEXP (VECSXP) A list containing:
+ *         - labels: Expanded vector of labels
+ *         - sires: Expanded vector of sire labels
+ *         - dams: Expanded vector of dam labels
+ *         - generations: Vector of generation numbers (all NA)
+ *         - selfing_generations: Expanded vector of selfing generation numbers
+ *         - expanded: Logical vector indicating if each entry is an expansion
+ *
+ */
+
+void print_progress_bar(int current, int total, int bar_width);
+
+SEXP expand_pedigree_selfing(SEXP labels, SEXP sires, SEXP dams, SEXP selfing_generations, SEXP sep_char, SEXP verbose) {
+    int n = LENGTH(labels);
+    int total_rows = 0;
+    int *sg = INTEGER(selfing_generations);
+    int show_progress = asLogical(verbose);
+    
+    // Calculate total number of rows in expanded pedigree
+    for (int i = 0; i < n; i++) {
+        total_rows += (sg[i] == 0) ? 1 : (sg[i] + 1);
+    }
+    
+    // Allocate memory for result
+    SEXP result = PROTECT(allocVector(VECSXP, 6));
+    SET_VECTOR_ELT(result, 0, allocVector(STRSXP, total_rows));  // label
+    SET_VECTOR_ELT(result, 1, allocVector(STRSXP, total_rows));  // sire
+    SET_VECTOR_ELT(result, 2, allocVector(STRSXP, total_rows));  // dam
+    SET_VECTOR_ELT(result, 3, allocVector(INTSXP, total_rows));  // generation
+    SET_VECTOR_ELT(result, 4, allocVector(INTSXP, total_rows));  // selfing_generation
+    SET_VECTOR_ELT(result, 5, allocVector(LGLSXP, total_rows));  // expanded
+    
+    const char* sep = CHAR(STRING_ELT(sep_char, 0));
+    int row = 0;
+    char buffer[256];  // Adjust buffer size as needed
+    
+    if (show_progress) {
+        R_FlushConsole();
+    }
+    
+    for (int i = 0; i < n; i++) {
+        // Update progress
+        if (show_progress) print_progress_bar(i + 1, n, 50);
+        const char* id = CHAR(STRING_ELT(labels, i));
+        int cycles = sg[i];
+        
+        if (cycles == 0) {
+            SET_STRING_ELT(VECTOR_ELT(result, 0), row, STRING_ELT(labels, i));
+            SET_STRING_ELT(VECTOR_ELT(result, 1), row, STRING_ELT(sires, i));
+            SET_STRING_ELT(VECTOR_ELT(result, 2), row, STRING_ELT(dams, i));
+            INTEGER(VECTOR_ELT(result, 3))[row] = NA_INTEGER;
+            INTEGER(VECTOR_ELT(result, 4))[row] = 0;
+            LOGICAL(VECTOR_ELT(result, 5))[row] = FALSE;
+            row++;
+        } else {
+            for (int j = 0; j <= cycles; j++) {
+                if (j == cycles) {
+                    SET_STRING_ELT(VECTOR_ELT(result, 0), row, STRING_ELT(labels, i));
+                    LOGICAL(VECTOR_ELT(result, 5))[row] = FALSE;
+                } else {
+                    snprintf(buffer, sizeof(buffer), "%s%s%d", id, sep, j);
+                    SET_STRING_ELT(VECTOR_ELT(result, 0), row, mkChar(buffer));
+                    LOGICAL(VECTOR_ELT(result, 5))[row] = TRUE;
+                }
+                
+                if (j == 0) {
+                    SET_STRING_ELT(VECTOR_ELT(result, 1), row, STRING_ELT(sires, i));
+                    SET_STRING_ELT(VECTOR_ELT(result, 2), row, STRING_ELT(dams, i));
+                } else {
+                    snprintf(buffer, sizeof(buffer), "%s%s%d", id, sep, j-1);
+                    SET_STRING_ELT(VECTOR_ELT(result, 1), row, mkChar(buffer));
+                    SET_STRING_ELT(VECTOR_ELT(result, 2), row, mkChar(buffer));
+                }
+                
+                INTEGER(VECTOR_ELT(result, 3))[row] = NA_INTEGER;
+                INTEGER(VECTOR_ELT(result, 4))[row] = j;
+                row++;
+            }
+        }
+        
+    }
+    
+    if (show_progress) {
+		Rprintf("\n");
+        R_FlushConsole();
+    }
+    
+    UNPROTECT(1);
+    return result;
+}
+
+// for printing progress in c functions
+void print_progress_bar(int current, int total, int bar_width) {
+    float progress = (float)current / total;
+    int filled_width = (int)(bar_width * progress);
+
+    Rprintf("\r[");
+    for (int i = 0; i < bar_width; ++i) {
+        if (i < filled_width) {
+            Rprintf("=");
+        } else {
+            Rprintf(" ");
+        }
+    }
+    Rprintf("] %.1f%%", progress * 100);
+    R_FlushConsole();
+}

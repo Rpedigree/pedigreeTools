@@ -2,9 +2,12 @@
 % Please edit documentation in R/pedigree.R
 \name{getA}
 \alias{getA}
+\alias{getASubset}
 \title{Additive relationship matrix}
 \usage{
 getA(ped, labs = NULL)
+
+getASubset(ped, labs = NULL)
 }
 \arguments{
 \item{ped}{\code{\link{pedigree}}}
@@ -20,6 +23,11 @@ matrix (\linkS4class{dsCMatrix} - symmetric sparse)
 \description{
 Returns the additive relationship matrix for the pedigree.
 }
+\section{Functions}{
+\itemize{
+\item \code{getASubset()}: Additive relationship matrix
+
+}}
 \examples{
 ped <- pedigree(sire = c(NA, NA, 1,  1, 4, 5),
                 dam =  c(NA, NA, 2, NA, 3, 2),
