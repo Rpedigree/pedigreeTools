@@ -23,10 +23,7 @@ Paulino Perez-Rodriguez, G. de los Campos, S. Avadhanam & Gregor Gorjanc
 ### Installing pedigreeTools from GitHub
 
 ```R
-#R functions related to pedigrees
-install.packages(pkg='devtools',repos='https://cran.r-project.org/')  #1# install devtools
-library(devtools)                                                     #2# load the library
-install_git('https://github.com/Rpedigree/pedigreeTools/')            #3# install pedigreeTools from GitHub
+remotes:::install_github('https://github.com/Rpedigree/pedigreeTools/')            
 ```
 ### Examples
  
